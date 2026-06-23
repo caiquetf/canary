@@ -22,6 +22,9 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
 .voc-btn.sel .vdesc{color:#C8A860}
 #startBtn{background:#8B6914;border:none;color:#000;padding:14px 40px;font-size:20px;font-family:inherit;font-weight:bold;cursor:pointer;border-radius:4px;margin-top:8px;letter-spacing:2px;transition:background .2s;width:100%;max-width:500px}
 #startBtn:hover{background:#FFD700}
+#continueBtn{background:#1a0e05;border:2px solid #44AA44;color:#44FF88;padding:14px 40px;font-size:18px;font-family:inherit;font-weight:bold;cursor:pointer;border-radius:4px;margin-bottom:8px;letter-spacing:2px;width:100%;max-width:500px;display:none}
+#continueBtn:hover{background:#112211;border-color:#88FF88}
+.save-info{color:#5C9A5C;font-size:12px;text-align:center;margin-bottom:6px;width:100%;max-width:500px;display:none}
 #gameWrap{display:none;width:100vw;height:100vh;position:relative}
 #gameCanvas{display:block;position:absolute;top:0;left:0}
 #dpad{position:absolute;pointer-events:all}
@@ -85,7 +88,9 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
   </div>
   <div class="cs-label" style="width:100%;max-width:500px;margin-bottom:8px">Escolha sua Vocação</div>
   <div class="voc-grid" id="vocGrid"></div>
-  <button id="startBtn">⚔ COMEÇAR AVENTURA</button>
+  <div class="save-info" id="saveInfo"></div>
+  <button id="continueBtn" onclick="loadGame()">▶ CONTINUAR JOGO</button>
+  <button id="startBtn">⚔ NOVO JOGO</button>
 </div>
 
 <div id="gameWrap">
@@ -101,6 +106,7 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
     <button class="abtn" id="btnHp">❤<br>HP</button>
     <button class="abtn" id="btnMp">✦<br>MP</button>
     <button class="abtn" id="btnInv">🎒<br>INV</button>
+    <button class="abtn" id="btnSave">💾<br>SAL</button>
   </div>
   <div id="spellBar"></div>
 </div>
@@ -608,7 +614,7 @@ class World {
       if(drops.length)this.log(`${m.name} largou: ${drops.map(id=>ITEMS[id]?.n||'?').join(', ')}`,'#FFD700');
       const leveled=p.gainXp(m.xpReward);
       this.log(`+${m.xpReward} XP de ${m.name}.`,'#00CC00');
-      if(leveled)this.log(`>>> LEVEL UP! Você é nível ${p.level}! <<<`,'#FFD700');
+      if(leveled){this.log(`>>> LEVEL UP! Você é nível ${p.level}! <<<`,'#FFD700');setTimeout(saveGame,100);}
     });
     this.monsters=this.monsters.filter(m=>m.alive);
     this._updateAI();
@@ -860,6 +866,7 @@ class World {
     this._deathShown=false;
     document.getElementById('deathModal').classList.remove('show');
     this.log(`Renasceu em ${town.name}. Perdeu ${lost} gold.`,'#FF8800');
+    setTimeout(saveGame,200);
   }
   _updateNPCs(){
     const p=this.player;
@@ -2591,6 +2598,89 @@ function updateSpellBar(force) {
   });
 }
 
+// ═══ SAVE / LOAD ═══
+const SAVE_KEY = 'tibia_android_v1';
+
+function _packFog(arr) {
+  const n = Math.ceil(arr.length / 8);
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    let byte = 0;
+    for (let b = 0; b < 8; b++) { if (arr[i*8+b]) byte |= 1<<b; }
+    s += String.fromCharCode(byte);
+  }
+  return btoa(s);
+}
+function _unpackFog(str) {
+  const bytes = atob(str); const out = new Uint8Array(MAP_W*MAP_H);
+  for (let i = 0; i < bytes.length; i++) {
+    const byte = bytes.charCodeAt(i);
+    for (let b = 0; b < 8; b++) { if (byte & (1<<b)) out[i*8+b] = 1; }
+  }
+  return out;
+}
+
+function saveGame() {
+  if (!world) return;
+  const p = world.player;
+  const data = {
+    v:1, ts: Date.now(),
+    p: {
+      name:p.name, voc:p.voc, level:p.level,
+      xp:p.xp, hp:p.hp, maxHp:p.maxHp, mp:p.mp, maxMp:p.maxMp,
+      atk:p.atk, def:p.def, gold:p.gold,
+      inv:{...p.inv}, eq:{...p.eq},
+      spellCds:{...p.spellCds}, atkBuff:{...p.atkBuff},
+      x:world.currentFloor===0?p.x:world._surfacePx,
+      y:world.currentFloor===0?p.y:world._surfacePy,
+    },
+    zones:[...world.spawnedZones],
+    spx:world._surfacePx, spy:world._surfacePy,
+    fog:_packFog(world.map.revealed),
+  };
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    world.log('Jogo salvo!','#44FF88');
+  } catch(e) { world.log('Erro ao salvar!','#FF4444'); }
+}
+
+function loadGame() {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (!raw) return;
+  let data;
+  try { data = JSON.parse(raw); } catch(e) { return; }
+  if (data.v !== 1) return;
+  const pd = data.p;
+  startGame(pd.name, pd.voc);
+  const p = world.player;
+  p.level=pd.level; p.xp=pd.xp;
+  p.hp=pd.hp; p.maxHp=pd.maxHp; p.mp=pd.mp; p.maxMp=pd.maxMp;
+  p.atk=pd.atk; p.def=pd.def; p.gold=pd.gold;
+  p.inv=pd.inv; p.eq=pd.eq;
+  p.spellCds=pd.spellCds||{}; p.atkBuff=pd.atkBuff||{val:1,ttl:0};
+  p.x=pd.x; p.y=pd.y;
+  world.spawnedZones=new Set(data.zones||[]);
+  world._surfacePx=data.spx||pd.x; world._surfacePy=data.spy||pd.y;
+  try { world.map.revealed=_unpackFog(data.fog); } catch(e){}
+  if (renderer) { renderer._mmCanvas=null; renderer._fogCanvas=null; renderer._lastFloor=-1; }
+  updateSpellBar(true);
+  world.log('Jogo carregado!','#44FF88');
+}
+
+function _checkSaveOnSelect() {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (!raw) return;
+  try {
+    const d = JSON.parse(raw);
+    const pd = d.p;
+    const dt = new Date(d.ts);
+    const fmt = `${dt.toLocaleDateString('pt-BR')} ${dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+    document.getElementById('saveInfo').style.display='block';
+    document.getElementById('saveInfo').textContent=`${pd.name} · ${pd.voc} · Nível ${pd.level} · ${fmt}`;
+    document.getElementById('continueBtn').style.display='block';
+  } catch(e){}
+}
+
 function startGame(name, voc) {
   document.getElementById('charSelect').style.display = 'none';
   document.getElementById('gameWrap').style.display   = 'block';
@@ -2648,6 +2738,7 @@ function bindInput() {
   document.getElementById('btnHp').addEventListener('click', ()=>world.useHpPotion());
   document.getElementById('btnMp').addEventListener('click', ()=>world.useMpPotion());
   document.getElementById('btnInv').addEventListener('click', openInventory);
+  document.getElementById('btnSave').addEventListener('click', saveGame);
 
   const keyMap = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
                   w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
@@ -2811,6 +2902,7 @@ document.getElementById('startBtn').addEventListener('click', () => {
 document.getElementById('nameInput').addEventListener('keydown', e=>{
   if (e.key==='Enter') document.getElementById('startBtn').click();
 });
+_checkSaveOnSelect();
 </script>
 </body>
 </html>
