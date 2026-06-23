@@ -2255,21 +2255,18 @@ class ParticleSystem {
 // ═══════════════════════════════════════════════════════
 const PADV_CDN = 'https://cdn.jsdelivr.net/gh/DistTopic/padventures-sprites@main/sprites';
 
-// Tile type → [category, [ids...]]  (IDs = best-guess Tibia-compatible; refine as needed)
+// Tile type → [category, [ids...]]  — IDs mapeados via sprite-explorer
 const TILE_SPR = {
-  G: ['item', [103, 105, 106]],
-  D: ['item', [351, 352, 354]],
-  S: ['item', [409, 411, 412]],
-  N: ['item', [231, 233, 234]],
-  W: ['item', [93,  94       ]],
-  X: ['item', [1026,1027,1028]],
-  V: ['item', [369, 370, 372 ]],
-  F: ['item', [423, 424, 426 ]],
-  T: ['item', [2700,2702,2703]],
-  M: ['item', [1284,1285     ]],
-  L: ['item', [490, 491, 493 ]],
-  H: ['item', [594           ]],
-  U: ['item', [1386          ]],
+  G: ['item', [193, 94]],        // grama + grama seca (variante)
+  D: ['item', [1]],               // terra
+  S: ['item', [308]],             // piso tijolinho (melhor match p/ pedra)
+  N: ['item', [131, 780]],        // areia + praia
+  F: ['item', [261]],             // terra dungeon
+  H: ['item', [314]],             // escada desce
+  U: ['item', [755, 756]],        // escada sobe (2 orientações)
+  X: ['item', [1171,1170,1174]], // parede h, parede v, canto
+  V: ['item', [1170,1171,1174]], // parede dungeon
+  // W, L, T, M → procedural (sem IDs ainda)
 };
 
 // Monster index → creature sprite ID (sequential from 40036 — swap when we identify names)
@@ -2305,7 +2302,17 @@ class CdnSprites {
   }
 
   tile(type, seed) {
-    return null; // IDs a mapear via sprite-explorer — usa pixel art procedural por enquanto
+    const e = TILE_SPR[type]; if (!e) return null;
+    const [cat, ids] = e;
+    // preload all variants, return whichever is ready (prefer seed-based pick)
+    const preferred = ids[seed % ids.length];
+    const rp = this._ready(`${cat}/${preferred}`);
+    if (rp) return rp;
+    for (const id of ids) {
+      const r = this._ready(`${cat}/${id}`);
+      if (r) return r;
+    }
+    return null;
   }
 
   creature(idx) {
