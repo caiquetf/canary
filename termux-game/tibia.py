@@ -15,38 +15,42 @@ from heapq import heappush, heappop
 
 # ─── PALETA DE CORES ─────────────────────────────────────────────────────────
 
+# Inicializados como 0; preenchidos em init_colors() após initscr()
+C_GRASS = C_WATER = C_STONE = C_GOLD = C_RED = C_CYAN = C_MAGENTA = 0
+C_HPBAR = C_MPBAR = C_XPBAR = C_BARBG = C_CRIT = C_YELLOW = 0
+
 def init_colors():
+    global C_GRASS, C_WATER, C_STONE, C_GOLD, C_RED, C_CYAN, C_MAGENTA
+    global C_HPBAR, C_MPBAR, C_XPBAR, C_BARBG, C_CRIT, C_YELLOW
     curses.start_color()
     curses.use_default_colors()
-    # pair_number, fg, bg
-    curses.init_pair(1,  curses.COLOR_GREEN,   -1)  # grass
-    curses.init_pair(2,  curses.COLOR_BLUE,    -1)  # water
-    curses.init_pair(3,  curses.COLOR_WHITE,   -1)  # stone/wall
-    curses.init_pair(4,  curses.COLOR_YELLOW,  -1)  # sand/gold/item
-    curses.init_pair(5,  curses.COLOR_RED,     -1)  # monster/damage
-    curses.init_pair(6,  curses.COLOR_CYAN,    -1)  # player/mana
-    curses.init_pair(7,  curses.COLOR_MAGENTA, -1)  # special
-    curses.init_pair(8,  curses.COLOR_BLACK,   curses.COLOR_RED)    # hp bar fill
-    curses.init_pair(9,  curses.COLOR_BLACK,   curses.COLOR_BLUE)   # mp bar fill
-    curses.init_pair(10, curses.COLOR_BLACK,   curses.COLOR_GREEN)  # xp bar fill
-    curses.init_pair(11, curses.COLOR_BLACK,   curses.COLOR_WHITE)  # bar bg
-    curses.init_pair(12, curses.COLOR_BLACK,   curses.COLOR_YELLOW) # crit
-    curses.init_pair(13, curses.COLOR_WHITE,   curses.COLOR_BLACK)  # chat bg
-    curses.init_pair(14, curses.COLOR_YELLOW,  curses.COLOR_BLACK)  # hud border
-
-C_GRASS   = curses.color_pair(1)
-C_WATER   = curses.color_pair(2)
-C_STONE   = curses.color_pair(3)
-C_GOLD    = curses.color_pair(4)
-C_RED     = curses.color_pair(5)
-C_CYAN    = curses.color_pair(6)
-C_MAGENTA = curses.color_pair(7)
-C_HPBAR   = curses.color_pair(8)
-C_MPBAR   = curses.color_pair(9)
-C_XPBAR   = curses.color_pair(10)
-C_BARBG   = curses.color_pair(11)
-C_CRIT    = curses.color_pair(12)
-C_YELLOW  = curses.color_pair(4)
+    curses.init_pair(1,  curses.COLOR_GREEN,   -1)
+    curses.init_pair(2,  curses.COLOR_BLUE,    -1)
+    curses.init_pair(3,  curses.COLOR_WHITE,   -1)
+    curses.init_pair(4,  curses.COLOR_YELLOW,  -1)
+    curses.init_pair(5,  curses.COLOR_RED,     -1)
+    curses.init_pair(6,  curses.COLOR_CYAN,    -1)
+    curses.init_pair(7,  curses.COLOR_MAGENTA, -1)
+    curses.init_pair(8,  curses.COLOR_BLACK,   curses.COLOR_RED)
+    curses.init_pair(9,  curses.COLOR_BLACK,   curses.COLOR_BLUE)
+    curses.init_pair(10, curses.COLOR_BLACK,   curses.COLOR_GREEN)
+    curses.init_pair(11, curses.COLOR_BLACK,   curses.COLOR_WHITE)
+    curses.init_pair(12, curses.COLOR_BLACK,   curses.COLOR_YELLOW)
+    curses.init_pair(13, curses.COLOR_WHITE,   curses.COLOR_BLACK)
+    curses.init_pair(14, curses.COLOR_YELLOW,  curses.COLOR_BLACK)
+    C_GRASS   = curses.color_pair(1)
+    C_WATER   = curses.color_pair(2)
+    C_STONE   = curses.color_pair(3)
+    C_GOLD    = curses.color_pair(4)
+    C_RED     = curses.color_pair(5)
+    C_CYAN    = curses.color_pair(6)
+    C_MAGENTA = curses.color_pair(7)
+    C_HPBAR   = curses.color_pair(8)
+    C_MPBAR   = curses.color_pair(9)
+    C_XPBAR   = curses.color_pair(10)
+    C_BARBG   = curses.color_pair(11)
+    C_CRIT    = curses.color_pair(12)
+    C_YELLOW  = curses.color_pair(4)
 
 # ─── TILES ───────────────────────────────────────────────────────────────────
 
@@ -56,19 +60,22 @@ class TileInfo:
     color: int
     passable: bool
 
-TILES = {
-    'G':  TileInfo('.',  C_GRASS,   True),   # Grass
-    'D':  TileInfo(',',  C_GOLD,    True),   # Dirt
-    'S':  TileInfo('~',  C_STONE,   True),   # Stone floor
-    'W':  TileInfo('≈',  C_WATER,   False),  # Water
-    'X':  TileInfo('#',  C_STONE,   False),  # Wall
-    'M':  TileInfo('^',  C_STONE,   False),  # Mountain
-    'T':  TileInfo('T',  C_GRASS,   False),  # Tree
-    'N':  TileInfo('"',  C_GOLD,    True),   # Sand
-    'F':  TileInfo('_',  C_MAGENTA, True),   # Dungeon floor
-    'V':  TileInfo('▓',  C_STONE,   False),  # Dungeon wall
-    'L':  TileInfo('*',  C_RED,     False),  # Lava
-}
+def make_tiles():
+    return {
+        'G':  TileInfo('.',  C_GRASS,   True),
+        'D':  TileInfo(',',  C_GOLD,    True),
+        'S':  TileInfo('~',  C_STONE,   True),
+        'W':  TileInfo('=',  C_WATER,   False),
+        'X':  TileInfo('#',  C_STONE,   False),
+        'M':  TileInfo('^',  C_STONE,   False),
+        'T':  TileInfo('T',  C_GRASS,   False),
+        'N':  TileInfo('"',  C_GOLD,    True),
+        'F':  TileInfo('_',  C_MAGENTA, True),
+        'V':  TileInfo('+',  C_STONE,   False),
+        'L':  TileInfo('*',  C_RED,     False),
+    }
+
+TILES: dict = {}
 
 # ─── MAPA ────────────────────────────────────────────────────────────────────
 
@@ -271,20 +278,23 @@ ITEMS = {
 }
 
 # Monstros: name, ch, color, hp, atk, def, spd, xp, aggro_range, loot, level
-MONSTER_TEMPLATES = [
-    ('Rat',          'r', C_GOLD,    20,   5,  2, 3,    5,  4, [(30, 0.8)],                  1),
-    ('Snake',        's', C_GRASS,   30,   8,  3, 4,   10,  5, [(30, 0.5)],                  2),
-    ('Wolf',         'w', C_STONE,   80,  15,  8, 5,   25,  5, [(30, 1.0), (30, 0.5)],       5),
-    ('Orc',          'O', C_GRASS,  150,  22, 14, 4,   60,  6, [(4, 0.2), (30, 1.0)],       10),
-    ('Troll',        'T', C_GOLD,   200,  28, 18, 3,  100,  6, [(8, 0.15), (30, 1.0)],      15),
-    ('Skeleton',     'K', C_STONE,  120,  20, 10, 4,   50,  5, [(30, 1.0), (20, 0.1)],       8),
-    ('Zombie',       'Z', C_MAGENTA,180,  25, 12, 2,   80,  5, [(30, 1.0), (20, 0.15)],     12),
-    ('Giant Spider', 'S', C_STONE,  250,  35, 20, 5,  150,  6, [(9, 0.1), (22, 0.2)],       18),
-    ('Slime',        'j', C_GRASS,   60,  10,  5, 2,   15,  4, [(30, 0.6)],                  3),
-    ('Minotaur',     'M', C_RED,    400,  45, 28, 4,  300,  7, [(2, 0.15), (31, 0.5)],      25),
-    ('Dragon',       'D', C_RED,   1500,  80, 50, 5, 2000,  8, [(10, 0.05), (31, 1.0)],     50),
-    ('Demon',        '&', C_MAGENTA,3000,120, 80, 6, 6000, 10, [(31, 1.0), (23, 0.9)],      80),
-]
+def make_monster_templates():
+    return [
+        ('Rat',          'r', C_GOLD,    20,   5,  2, 3,    5,  4, [(30, 0.8)],                  1),
+        ('Snake',        's', C_GRASS,   30,   8,  3, 4,   10,  5, [(30, 0.5)],                  2),
+        ('Wolf',         'w', C_STONE,   80,  15,  8, 5,   25,  5, [(30, 1.0), (30, 0.5)],       5),
+        ('Orc',          'O', C_GRASS,  150,  22, 14, 4,   60,  6, [(4, 0.2), (30, 1.0)],       10),
+        ('Troll',        'T', C_GOLD,   200,  28, 18, 3,  100,  6, [(8, 0.15), (30, 1.0)],      15),
+        ('Skeleton',     'K', C_STONE,  120,  20, 10, 4,   50,  5, [(30, 1.0), (20, 0.1)],       8),
+        ('Zombie',       'Z', C_MAGENTA,180,  25, 12, 2,   80,  5, [(30, 1.0), (20, 0.15)],     12),
+        ('Giant Spider', 'S', C_STONE,  250,  35, 20, 5,  150,  6, [(9, 0.1), (22, 0.2)],       18),
+        ('Slime',        'j', C_GRASS,   60,  10,  5, 2,   15,  4, [(30, 0.6)],                  3),
+        ('Minotaur',     'M', C_RED,    400,  45, 28, 4,  300,  7, [(2, 0.15), (31, 0.5)],      25),
+        ('Dragon',       'D', C_RED,   1500,  80, 50, 5, 2000,  8, [(10, 0.05), (31, 1.0)],     50),
+        ('Demon',        '&', C_MAGENTA,3000,120, 80, 6, 6000, 10, [(31, 1.0), (23, 0.9)],      80),
+    ]
+
+MONSTER_TEMPLATES: list = []
 
 # ─── ENTIDADES ───────────────────────────────────────────────────────────────
 
@@ -905,10 +915,13 @@ def character_select(stdscr):
 # ─── LOOP PRINCIPAL ──────────────────────────────────────────────────────────
 
 def main(stdscr):
+    global TILES
     curses.curs_set(0)
     stdscr.nodelay(True)
     stdscr.keypad(True)
     init_colors()
+    TILES = make_tiles()
+    MONSTER_TEMPLATES[:] = make_monster_templates()
 
     name, vocation = character_select(stdscr)
 
