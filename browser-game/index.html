@@ -59,6 +59,19 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
 .shop-item-name{flex:1}
 #shopClose{margin-top:12px;width:100%;background:#8B6914;border:none;color:#000;padding:10px;font-size:16px;font-family:inherit;font-weight:bold;cursor:pointer;border-radius:4px}
 #shopClose:hover{background:#FFD700}
+#deathModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;align-items:center;justify-content:center;flex-direction:column}
+#deathModal.show{display:flex}
+#deathBox{background:#0a0000;border:3px solid #CC0000;padding:28px 24px;max-width:340px;width:88%;border-radius:6px;text-align:center;color:#E8D5B7}
+#deathBox h2{color:#CC0000;font-size:36px;letter-spacing:3px;margin-bottom:6px;text-shadow:0 0 20px #FF0000}
+.death-sub{color:#888;font-size:14px;margin-bottom:20px}
+.death-info{background:#110000;border:1px solid #441111;border-radius:4px;padding:12px;margin-bottom:16px;font-size:14px}
+.death-info .di-row{display:flex;justify-content:space-between;padding:3px 0}
+.di-label{color:#888}
+.di-val{color:#FFD700;font-weight:bold}
+.di-penalty{color:#FF4444}
+.death-town{color:#88FF88;font-size:13px;margin-bottom:20px}
+#btnRespawn{width:100%;background:#8B0000;border:2px solid #CC0000;color:#FFD700;padding:16px;font-size:18px;font-family:inherit;font-weight:bold;cursor:pointer;border-radius:4px;letter-spacing:2px}
+#btnRespawn:active{background:#CC0000}
 </style>
 </head>
 <body>
@@ -102,6 +115,20 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
     <div class="shop-gold" id="shopGold"></div>
     <div id="shopContent"></div>
     <button id="shopClose" onclick="closeShop()">FECHAR</button>
+  </div>
+</div>
+
+<div id="deathModal">
+  <div id="deathBox">
+    <h2>VOCÊ MORREU</h2>
+    <div class="death-sub">Sua jornada terminou... por enquanto.</div>
+    <div class="death-info">
+      <div class="di-row"><span class="di-label">Nível</span><span class="di-val" id="dInfoLvl">—</span></div>
+      <div class="di-row"><span class="di-label">Gold perdido</span><span class="di-penalty" id="dInfoLost">—</span></div>
+      <div class="di-row"><span class="di-label">Gold restante</span><span class="di-val" id="dInfoGold">—</span></div>
+    </div>
+    <div class="death-town" id="dInfoTown">Renascendo em...</div>
+    <button id="btnRespawn" onclick="world.respawn()">⚔ RENASCER NA CIDADE</button>
   </div>
 </div>
 
@@ -345,6 +372,11 @@ class WorldMap {
 // ═══ DUNGEON MAP ═══
 const DUNGEON_NAMES=['Cripta dos Mortos','Catacumbas das Aranhas',"Covil dos Dragões"];
 const DUNGEON_POOLS=[[3,4,5,6,5,3],[5,6,7,9,7,5],[9,10,11,10,9,11]];
+const TOWN_SPAWNS=[
+  {name:'Primeiro Vilejo', x:30, y:30},
+  {name:'Porto do Norte',  x:90, y:30},
+  {name:'Aldeia do Sul',   x:60, y:90},
+];
 
 class DungeonMap {
   constructor(difficulty){
@@ -539,6 +571,7 @@ class World {
     this._surfaceMap=null;this._surfaceMonsters=null;
     this._surfacePx=30;this._surfacePy=30;
     this._preMoveX=30;this._preMoveY=30;
+    this._deathShown=false;
     this.npcs=NPC_DEFS.map(d=>new NPC(d));
     player.x=30;player.y=30;
     this._fixPos(player);
@@ -562,6 +595,7 @@ class World {
   update(){
     this.tick++;this.regenTick++;
     const p=this.player;
+    if(!p.alive)return;
     this.map.reveal(p.x,p.y);
     if(this.currentFloor===0){
       const zk=`${Math.floor(p.x/20)}_${Math.floor(p.y/20)}`;
@@ -609,7 +643,7 @@ class World {
           const actual=p.damage(dmg);
           this.float(`-${actual}`,p.x,p.y,'#FF4444');
           this.events.push({t:'blood',x:p.x,y:p.y});
-          if(!p.alive)this.log('Você foi morto!','#FF0000');
+          if(!p.alive)this._onDeath();
         } else if(dist>1&&m.moveCd===0){
           m.moveCd=Math.max(1,8-Math.floor(m.spd/2));
           this._moveToward(m,p.x,p.y,passable);
@@ -781,6 +815,51 @@ class World {
     if(!targets.length){this.log('Nenhum inimigo visível!','#888');return;}
     targets.forEach(t=>{this._addProj(t.x,t.y,spell);this._spellDmg(t,spell);});
     this.log(`${spell.name}: atingiu ${targets.length} inimigo(s)!`,spell.color);
+  }
+  _onDeath(){
+    if(this._deathShown)return;
+    this._deathShown=true;
+    this.log('Você foi morto!','#FF0000');
+    const p=this.player;
+    const lost=Math.floor(p.gold*0.1);
+    // Find nearest town to last surface position
+    const sx=this._surfacePx||30,sy=this._surfacePy||30;
+    let town=TOWN_SPAWNS[0],bd=Infinity;
+    for(const t of TOWN_SPAWNS){
+      const d=Math.abs(t.x-sx)+Math.abs(t.y-sy);
+      if(d<bd){bd=d;town=t;}
+    }
+    setTimeout(()=>{
+      document.getElementById('dInfoLvl').textContent=`${p.level}`;
+      document.getElementById('dInfoLost').textContent=`-${lost} gold`;
+      document.getElementById('dInfoGold').textContent=`${Math.max(0,p.gold-lost)} gold`;
+      document.getElementById('dInfoTown').textContent=`Renascendo em ${town.name}`;
+      document.getElementById('deathModal').classList.add('show');
+    },1400);
+  }
+  respawn(){
+    const p=this.player;
+    // Exit dungeon if underground
+    if(this.currentFloor>0)this.exitDungeon();
+    // Find nearest town to surface death position
+    const sx=this._surfacePx||30,sy=this._surfacePy||30;
+    let town=TOWN_SPAWNS[0],bd=Infinity;
+    for(const t of TOWN_SPAWNS){
+      const d=Math.abs(t.x-sx)+Math.abs(t.y-sy);
+      if(d<bd){bd=d;town=t;}
+    }
+    const lost=Math.floor(p.gold*0.1);
+    p.gold=Math.max(0,p.gold-lost);
+    p.hp=Math.max(1,Math.floor(p.maxHp*0.3));
+    p.mp=Math.max(0,Math.floor(p.maxMp*0.3));
+    p.alive=true;
+    p.atkBuff={val:1,ttl:0};
+    p.x=town.x;p.y=town.y;
+    this._fixPos(p);
+    this.map.reveal(p.x,p.y,10);
+    this._deathShown=false;
+    document.getElementById('deathModal').classList.remove('show');
+    this.log(`Renasceu em ${town.name}. Perdeu ${lost} gold.`,'#FF8800');
   }
   _updateNPCs(){
     const p=this.player;
@@ -2186,21 +2265,10 @@ class Renderer {
     ctx.strokeRect(0, mH, W, cH);
     this._drawChat(ctx, world, mH, W, cH);
 
-    // ── DEATH OVERLAY ────────────────────────────────
+    // ── DEATH TINT (modal handles interaction) ───────
     if (!p.alive) {
-      ctx.fillStyle = 'rgba(0,0,0,.8)';
+      ctx.fillStyle = 'rgba(80,0,0,.35)';
       ctx.fillRect(0, 0, W, H);
-      ctx.font = 'bold 48px monospace';
-      ctx.strokeStyle = '#000'; ctx.lineWidth = 4;
-      const dm = 'VOCÊ MORREU';
-      const dmx = W/2 - ctx.measureText(dm).width/2;
-      ctx.strokeText(dm, dmx, H/2-20);
-      ctx.fillStyle = '#CC0000';
-      ctx.fillText(dm, dmx, H/2-20);
-      ctx.font = '20px monospace';
-      const sub = `Nível ${p.level} · ${p.gold} gold`;
-      ctx.fillStyle = '#FFD700';
-      ctx.fillText(sub, W/2-ctx.measureText(sub).width/2, H/2+30);
     }
   }
 
@@ -2552,6 +2620,7 @@ function doMove(dir) {
   if (world.map.passable(nx,ny)) {
     world._preMoveX=p.x; world._preMoveY=p.y;
     p.x=nx; p.y=ny;
+    if(world.currentFloor===0){world._surfacePx=p.x;world._surfacePy=p.y;}
     world._checkTransition();
   }
 }
