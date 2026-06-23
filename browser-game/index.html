@@ -2251,6 +2251,92 @@ class ParticleSystem {
 }
 
 // ═══════════════════════════════════════════════════════
+//  CDN SPRITE LOADER — PAdventures sprites via jsDelivr
+// ═══════════════════════════════════════════════════════
+const PADV_CDN = 'https://cdn.jsdelivr.net/gh/DistTopic/padventures-sprites@main/sprites';
+
+// Tile type → [category, [ids...]]  (IDs = best-guess Tibia-compatible; refine as needed)
+const TILE_SPR = {
+  G: ['item', [103, 105, 106]],
+  D: ['item', [351, 352, 354]],
+  S: ['item', [409, 411, 412]],
+  N: ['item', [231, 233, 234]],
+  W: ['item', [93,  94       ]],
+  X: ['item', [1026,1027,1028]],
+  V: ['item', [369, 370, 372 ]],
+  F: ['item', [423, 424, 426 ]],
+  T: ['item', [2700,2702,2703]],
+  M: ['item', [1284,1285     ]],
+  L: ['item', [490, 491, 493 ]],
+  H: ['item', [594           ]],
+  U: ['item', [1386          ]],
+};
+
+// Monster index → creature sprite ID (sequential from 40036 — swap when we identify names)
+const MON_SPR = [40036,40037,40038,40039,40040,40041,40042,40043,40044,40045,40046,40047];
+
+// Vocation → creature sprite ID (placeholders — swap when identified)
+const VOC_SPR = { Knight:40100, Paladin:40101, Sorcerer:40102, Druid:40103 };
+
+class CdnSprites {
+  constructor() { this._c = {}; }
+
+  _load(cat, id) {
+    const k = `${cat}/${id}`;
+    if (!this._c[k]) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = `${PADV_CDN}/${cat}/${id}.png`;
+      this._c[k] = img;
+    }
+    return this._c[k];
+  }
+
+  preload() {
+    for (const [, [cat, ids]] of Object.entries(TILE_SPR)) ids.forEach(id => this._load(cat, id));
+    MON_SPR.forEach(id => this._load('creature', id));
+    Object.values(VOC_SPR).forEach(id => this._load('creature', id));
+  }
+
+  // Returns a ready Image or null (triggers lazy load as side-effect)
+  _ready(k) {
+    const img = this._c[k];
+    return (img && img.complete && img.naturalWidth > 0) ? img : null;
+  }
+
+  tile(type, seed) {
+    const e = TILE_SPR[type]; if (!e) return null;
+    const [cat, ids] = e;
+    return this._ready(`${cat}/${ids[seed % ids.length]}`);
+  }
+
+  creature(idx) {
+    const id = MON_SPR[idx]; if (id == null) return null;
+    return this._ready(`creature/${id}`);
+  }
+
+  player(voc) {
+    const id = VOC_SPR[voc]; if (!id) return null;
+    return this._ready(`creature/${id}`);
+  }
+
+  // Draw sprite: uses first 32×32 for tiles, 64×64 for creatures, scaled to T×T
+  drawTile(ctx, img, dx, dy, T) {
+    const fw = Math.min(img.naturalWidth, 32);
+    const fh = Math.min(img.naturalHeight, 32);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, fw, fh, dx, dy, T, T);
+  }
+
+  drawEntity(ctx, img, dx, dy, T) {
+    const fw = Math.min(img.naturalWidth, 64);
+    const fh = Math.min(img.naturalHeight, 64);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, fw, fh, dx - T*0.1|0, dy - T*0.1|0, T*1.2|0, T*1.2|0);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 //  RENDERER
 // ═══════════════════════════════════════════════════════
 class Renderer {
@@ -2261,6 +2347,7 @@ class Renderer {
     this.tick = 0;
     this.sprites = new SpriteCache();
     this.sprites.build();
+    this.cdn = new CdnSprites();
     this.particles = new ParticleSystem();
     this.mapW = 0; this.mapH = 0;
     this._mmCanvas = null;
@@ -2309,10 +2396,14 @@ class Renderer {
     ctx.fillRect(Math.round(p.x*scale)-1, Math.round(p.y*scale)-1, 2, 2);
   }
 
-  // ── Tile drawing (improved Tibia-style) ──
+  // ── Tile drawing — CDN sprite first, procedural fallback ──
   _tile(ctx, sx, sy, type, tx, ty) {
     const T = TILE;
     const seed = ((tx * 7 + ty * 13) ^ (tx * ty)) & 0xFF;
+
+    // Try CDN sprite
+    const cdnImg = this.cdn.tile(type, seed);
+    if (cdnImg) { this.cdn.drawTile(ctx, cdnImg, sx, sy, T); return; }
 
     if (type === 'G') {
       // Grass: base color with subtle per-tile tint
@@ -2838,7 +2929,9 @@ class Renderer {
       const sx = m.x*T-camX, sy = m.y*T-camY;
       if (sx < -T*2 || sy < -T*2 || sx > mW+T || sy > mH+T) continue;
       this._shadow(ctx, sx, sy);
-      this._drawEntity(ctx, sx, sy, `m_${m.monIdx}`, `m_${m.monIdx}_f`, m.flashTick);
+      const mCdn = this.cdn.creature(m.monIdx);
+      if (mCdn) { this.cdn.drawEntity(ctx, mCdn, sx, sy, T); }
+      else       { this._drawEntity(ctx, sx, sy, `m_${m.monIdx}`, `m_${m.monIdx}_f`, m.flashTick); }
       this._hpBar(ctx, sx, sy, m.hp, m.maxHp, m.name, m.color);
     }
 
@@ -2849,7 +2942,9 @@ class Renderer {
         const sx = npc.x*T-camX, sy = npc.y*T-camY;
         if (sx < -T*2 || sy < -T*2 || sx > mW+T || sy > mH+T) continue;
         this._shadow(ctx, sx, sy);
-        this._drawEntity(ctx, sx, sy, `p_${npc.voc}`, `p_${npc.voc}_f`, npc.flashTick);
+        const nCdn = this.cdn.player(npc.voc);
+        if (nCdn) { this.cdn.drawEntity(ctx, nCdn, sx, sy, T); }
+        else       { this._drawEntity(ctx, sx, sy, `p_${npc.voc}`, `p_${npc.voc}_f`, npc.flashTick); }
         // Name/title badge
         ctx.font = 'bold 9px monospace';
         const badge = `${npc.name} [${npc.title}]`;
@@ -2865,7 +2960,9 @@ class Renderer {
     // ── PLAYER ───────────────────────────────────────
     const psx = Math.round(p.px - camX) - T/2, psy = Math.round(p.py - camY) - T/2;
     this._shadow(ctx, psx, psy);
-    this._drawEntity(ctx, psx, psy, `p_${p.voc}`, `p_${p.voc}_f`, p.flashTick);
+    const pCdn = this.cdn.player(p.voc);
+    if (pCdn) { this.cdn.drawEntity(ctx, pCdn, psx, psy, T); }
+    else       { this._drawEntity(ctx, psx, psy, `p_${p.voc}`, `p_${p.voc}_f`, p.flashTick); }
     // Player name
     ctx.font = 'bold 10px monospace';
     const pnw = ctx.measureText(p.name).width;
@@ -3443,6 +3540,7 @@ function startGame(name, voc) {
   _chatLen = 0; _eqBuilt = false;
   const canvas = document.getElementById('gameCanvas');
   renderer = new Renderer(canvas);
+  renderer.cdn.preload();
   const player = new Player(30, 30, name||'Herói', voc||'Knight');
   world = new World(player);
   setupLayout();
