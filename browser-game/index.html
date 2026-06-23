@@ -47,6 +47,18 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
 .inv-btn:hover{background:#8B6914;color:#000}
 #invClose{margin-top:12px;width:100%;background:#8B6914;border:none;color:#000;padding:10px;font-size:16px;font-family:inherit;font-weight:bold;cursor:pointer;border-radius:4px}
 #invClose:hover{background:#FFD700}
+#shopModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;align-items:center;justify-content:center}
+#shopModal.show{display:flex}
+#shopBox{background:#0e0800;border:3px solid #8B6914;padding:16px;max-width:420px;width:92%;max-height:82vh;overflow-y:auto;border-radius:4px;color:#E8D5B7}
+#shopBox h2{color:#FFD700;font-size:17px;margin-bottom:10px;text-align:center}
+#shopTabs{display:flex;gap:8px;margin-bottom:10px}
+.stab{flex:1;background:#1a0e05;border:2px solid #5C3317;color:#C8A860;padding:8px;font-family:inherit;font-size:13px;font-weight:bold;cursor:pointer;border-radius:4px;letter-spacing:1px}
+.stab.active{border-color:#FFD700;color:#FFD700;background:#2d1a0a}
+.shop-gold{color:#FFD700;font-size:13px;margin-bottom:8px}
+.shop-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #2d1a0a;font-size:13px}
+.shop-item-name{flex:1}
+#shopClose{margin-top:12px;width:100%;background:#8B6914;border:none;color:#000;padding:10px;font-size:16px;font-family:inherit;font-weight:bold;cursor:pointer;border-radius:4px}
+#shopClose:hover{background:#FFD700}
 </style>
 </head>
 <body>
@@ -78,6 +90,19 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
     <button class="abtn" id="btnInv">🎒<br>INV</button>
   </div>
   <div id="spellBar"></div>
+</div>
+
+<div id="shopModal">
+  <div id="shopBox">
+    <h2 id="shopTitle">LOJA</h2>
+    <div id="shopTabs">
+      <button class="stab" id="tabBuy"  onclick="shopTab('buy')">⚔ COMPRAR</button>
+      <button class="stab" id="tabSell" onclick="shopTab('sell')">💰 VENDER</button>
+    </div>
+    <div class="shop-gold" id="shopGold"></div>
+    <div id="shopContent"></div>
+    <button id="shopClose" onclick="closeShop()">FECHAR</button>
+  </div>
 </div>
 
 <div id="invModal">
@@ -138,6 +163,28 @@ const ITEMS = {
   30: {n:'Gold Coin',     t:'gold',   atk:0,  def:0,  hp:0,   mp:0,   val:1,   lvl:1,  color:'#FFD700'},
   31: {n:'Platinum Coin', t:'gold',   atk:0,  def:0,  hp:0,   mp:0,   val:100, lvl:1,  color:'#E5E4E2'},
 };
+
+// ─── NPC DEFINITIONS ──────────────────────────────────
+const NPC_DEFS = [
+  // Town 1 (30,30) — Aldric ferreiro + Brom guerreiro
+  {id:'aldric', name:'Aldric',  voc:'Knight',   lvl:20, x:33, y:27, role:'merchant', title:'Ferreiro',
+   stock:[1,4,6,8,11,13,20,22],
+   dlg:['Bem-vindo à ferraria!','As melhores armas da região!','Posso equipar qualquer aventureiro.','Compre antes que acabe!']},
+  {id:'brom',   name:'Brom',    voc:'Knight',   lvl:25, x:27, y:33, role:'warrior',  title:'Guarda',
+   dlg:['Protejo esta cidade!','Esses monstros não passarão!','Juntos somos mais fortes!','Cuidado com as masmorras ao sul.']},
+  // Town 2 (90,30) — Mira alquimista + Lyra paladina
+  {id:'mira',   name:'Mira',    voc:'Druid',    lvl:18, x:93, y:27, role:'merchant', title:'Alquimista',
+   stock:[20,21,22,23],
+   dlg:['Poções fresquinhas hoje!','Nunca aventure sem poções!','Minha fórmula é secreta.','Saúde em primeiro lugar!']},
+  {id:'lyra',   name:'Lyra',    voc:'Paladin',  lvl:30, x:87, y:33, role:'warrior',  title:'Paladina',
+   dlg:['A luz guia meus passos.','Precisa de ajuda, aventureiro?','Minha besta nunca erra.','Há monstros por perto!']},
+  // Town 3 (60,90) — Gareth armeiro + Zane sorcerer
+  {id:'gareth', name:'Gareth',  voc:'Paladin',  lvl:22, x:63, y:87, role:'merchant', title:'Armeiro',
+   stock:[2,5,9,10,12,14,20,22],
+   dlg:['Armaduras forjadas à mão!','Proteção é vida, aventureiro.','Veja meu estoque premium.','Forjado para durar séculos.']},
+  {id:'zane',   name:'Zane',    voc:'Sorcerer', lvl:35, x:57, y:93, role:'warrior',  title:'Arcano',
+   dlg:['O arcanismo é poder.','Meus feitiços afastam o mal.','Você viu os dragões ao leste?','Estude magia, é vital.']},
+];
 
 const MONSTERS = [
   ['Rat',          '#C8A850', 20,   5,  2, 3,   5,  4, [[30,.8]],               1],
@@ -453,6 +500,27 @@ class Monster extends Entity {
   dropLoot(){return this.lootTable.filter(([,c])=>Math.random()<c).map(([id])=>id);}
 }
 
+// ═══ NPC ═══
+class NPC extends Entity {
+  constructor(def){
+    const v=VOCATIONS[def.voc]||VOCATIONS.Knight;
+    const lvl=def.lvl;
+    super(def.x,def.y,def.name,
+      100+lvl*v.hp*2, 50+lvl*v.mp,
+      8+lvl*v.atk*1.5|0, 4+lvl*v.def, 5);
+    this.voc=def.voc; this.level=lvl;
+    this.role=def.role; this.title=def.title||'NPC';
+    this.dialogue=def.dlg; this.stock=def.stock||[];
+    this.defId=def.id;
+    this.spawnX=def.x; this.spawnY=def.y;
+    this.wanderRadius=def.role==='merchant'?3:10;
+    this.talkCd=Math.floor(Math.random()*200);
+    this.moveCd=Math.floor(Math.random()*40);
+    this.atkCd=0;
+    this.path=[]; this.pathAge=0;
+  }
+}
+
 // ═══ WORLD ═══
 class World {
   constructor(player){
@@ -471,8 +539,10 @@ class World {
     this._surfaceMap=null;this._surfaceMonsters=null;
     this._surfacePx=30;this._surfacePy=30;
     this._preMoveX=30;this._preMoveY=30;
+    this.npcs=NPC_DEFS.map(d=>new NPC(d));
     player.x=30;player.y=30;
     this._fixPos(player);
+    this.npcs.forEach(n=>this._fixPos(n));
     this.map.reveal(player.x,player.y,12);
     this._spawnZone(player.x,player.y,8,20);
     this.log('Bem-vindo! Mova com o D-pad. Toque em monstros para atacar.','#FFD700');
@@ -516,6 +586,7 @@ class World {
     }
     this.floats.forEach(f=>{f.ttl--;f.y+=f.dy;});
     this.floats=this.floats.filter(f=>f.ttl>0);
+    if(this.currentFloor===0)this._updateNPCs();
     this.monsters.forEach(m=>{if(m.flashTick>0)m.flashTick--;});
     if(p.flashTick>0)p.flashTick--;
     // Spell cooldowns & buff
@@ -710,6 +781,75 @@ class World {
     if(!targets.length){this.log('Nenhum inimigo visível!','#888');return;}
     targets.forEach(t=>{this._addProj(t.x,t.y,spell);this._spellDmg(t,spell);});
     this.log(`${spell.name}: atingiu ${targets.length} inimigo(s)!`,spell.color);
+  }
+  _updateNPCs(){
+    const p=this.player;
+    for(const npc of this.npcs){
+      if(!npc.alive)continue;
+      // Slow HP regen
+      if(this.tick%90===0&&npc.hp<npc.maxHp)npc.hp=Math.min(npc.maxHp,npc.hp+Math.ceil(npc.maxHp*.04));
+      // Talk when player is nearby
+      if(npc.talkCd>0){npc.talkCd--;}
+      else if(Math.abs(npc.x-p.x)<=7&&Math.abs(npc.y-p.y)<=7){
+        const line=npc.dialogue[Math.floor(Math.random()*npc.dialogue.length)];
+        this.floats.push({text:`"${line}"`,x:npc.x,y:(npc.y-2.2)*TILE,color:'#FFE080',ttl:120,dy:0});
+        npc.talkCd=280+Math.floor(Math.random()*200);
+      }
+      if(npc.role==='warrior')this._npcWarriorAI(npc);
+      else this._npcWander(npc,npc.wanderRadius);
+    }
+  }
+  _npcWarriorAI(npc){
+    npc.atkCd=Math.max(0,npc.atkCd-1);
+    npc.moveCd=Math.max(0,npc.moveCd-1);
+    // Find nearest alive monster within range
+    const tgt=this.monsters
+      .filter(m=>m.alive&&Math.max(Math.abs(m.x-npc.x),Math.abs(m.y-npc.y))<=14)
+      .sort((a,b)=>(Math.abs(a.x-npc.x)+Math.abs(a.y-npc.y))-(Math.abs(b.x-npc.x)+Math.abs(b.y-npc.y)))[0];
+    if(tgt){
+      const dist=Math.max(Math.abs(tgt.x-npc.x),Math.abs(tgt.y-npc.y));
+      if(dist<=1&&npc.atkCd===0){
+        npc.atkCd=npc.spd;
+        const dmg=Math.max(1,npc.atk-Math.floor(tgt.def/2));
+        const actual=tgt.damage(dmg);
+        this.events.push({t:'blood',x:tgt.x,y:tgt.y});
+        if(!tgt.alive)this.log(`${npc.name} derrotou ${tgt.name}!`,'#FFAA44');
+      }else if(dist>1&&npc.moveCd===0){
+        npc.moveCd=npc.spd;
+        npc.pathAge++;
+        if(npc.pathAge>8||!npc.path.length){
+          npc.path=aStar(this.map.passable.bind(this.map),npc.x,npc.y,tgt.x,tgt.y,120);
+          npc.pathAge=0;
+        }
+        if(npc.path.length){
+          const[nx,ny]=npc.path.shift();
+          const blocked=this.npcs.some(n=>n!==npc&&n.x===nx&&n.y===ny);
+          if(this.map.passable(nx,ny)&&!blocked){npc.x=nx;npc.y=ny;}
+        }
+      }
+    }else{
+      this._npcWander(npc,npc.wanderRadius);
+    }
+  }
+  _npcWander(npc,radius){
+    npc.moveCd=Math.max(0,npc.moveCd-1);
+    if(npc.moveCd>0||Math.random()>.015)return;
+    npc.moveCd=30+Math.floor(Math.random()*50);
+    const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
+    const[dx,dy]=dirs[Math.floor(Math.random()*4)];
+    const nx=npc.x+dx,ny=npc.y+dy;
+    const inRadius=Math.abs(nx-npc.spawnX)<=radius&&Math.abs(ny-npc.spawnY)<=radius;
+    const blocked=this.npcs.some(n=>n!==npc&&n.x===nx&&n.y===ny);
+    if(this.map.passable(nx,ny)&&inRadius&&!blocked){npc.x=nx;npc.y=ny;}
+  }
+  interactNPC(npc){
+    if(!npc.alive)return;
+    const dist=Math.max(Math.abs(npc.x-this.player.x),Math.abs(npc.y-this.player.y));
+    if(dist>2){this.log(`Aproxime-se de ${npc.name} para interagir!`,'#AAAAAA');return;}
+    const line=npc.dialogue[Math.floor(Math.random()*npc.dialogue.length)];
+    this.floats.push({text:`"${line}"`,x:npc.x,y:(npc.y-2.2)*TILE,color:'#FFE080',ttl:120,dy:0});
+    this.log(`${npc.name}: "${line}"`,'#FFE080');
+    if(npc.role==='merchant')openShop(npc);
   }
   enterDungeon(hx,hy){
     const key=`${hx}_${hy}`;
@@ -1958,6 +2098,26 @@ class Renderer {
       this._hpBar(ctx, sx, sy, m.hp, m.maxHp, m.name, m.color);
     }
 
+    // ── NPCs ─────────────────────────────────────────
+    if (world.currentFloor === 0) {
+      for (const npc of world.npcs) {
+        if (!npc.alive) continue;
+        const sx = npc.x*T-camX, sy = npc.y*T-camY;
+        if (sx < -T*2 || sy < -T*2 || sx > mW+T || sy > mH+T) continue;
+        this._shadow(ctx, sx, sy);
+        this._drawEntity(ctx, sx, sy, `p_${npc.voc}`, `p_${npc.voc}_f`, npc.flashTick);
+        // Name/title badge
+        ctx.font = 'bold 9px monospace';
+        const badge = `${npc.name} [${npc.title}]`;
+        const bw = ctx.measureText(badge).width;
+        ctx.fillStyle = npc.role==='merchant' ? 'rgba(60,40,0,.85)' : 'rgba(0,20,60,.85)';
+        ctx.fillRect(sx+T/2-bw/2-3, sy-27, bw+6, 12);
+        ctx.fillStyle = npc.role==='merchant' ? '#FFD700' : '#88CCFF';
+        ctx.fillText(badge, sx+T/2-bw/2, sy-17);
+        if (npc.hp < npc.maxHp) this._hpBar(ctx, sx, sy, npc.hp, npc.maxHp, '', '#FFF');
+      }
+    }
+
     // ── PLAYER ───────────────────────────────────────
     const psx = p.x*T-camX, psy = p.y*T-camY;
     this._shadow(ctx, psx, psy);
@@ -2450,6 +2610,8 @@ function bindInput() {
     const camY = world.player.y*TILE - renderer.mapH/2 + TILE/2;
     const wx = Math.floor((cx+camX)/TILE);
     const wy = Math.floor((cy+camY)/TILE);
+    const npc = world.npcs.find(n=>n.alive&&n.x===wx&&n.y===wy);
+    if (npc) { world.interactNPC(npc); return; }
     const m = world.monsters.find(m=>m.alive&&m.x===wx&&m.y===wy);
     if (m) world.attackMonster(m);
   };
@@ -2507,6 +2669,72 @@ vocList.forEach((v, i) => {
   };
   grid.appendChild(btn);
 });
+// ─── SHOP ─────────────────────────────────────────────
+let _shopNpc = null, _shopTab = 'buy';
+
+function openShop(npc) {
+  _shopNpc = npc;
+  document.getElementById('shopTitle').textContent = `${npc.title} — ${npc.name}`;
+  document.getElementById('shopModal').classList.add('show');
+  shopTab('buy');
+}
+function closeShop() {
+  document.getElementById('shopModal').classList.remove('show');
+  _shopNpc = null;
+}
+function shopTab(tab) {
+  _shopTab = tab;
+  document.getElementById('tabBuy').classList.toggle('active', tab==='buy');
+  document.getElementById('tabSell').classList.toggle('active', tab==='sell');
+  const p = world.player;
+  document.getElementById('shopGold').textContent = `Seu ouro: ${p.gold}g`;
+  let html = '';
+  if (tab === 'buy') {
+    for (const id of (_shopNpc.stock||[])) {
+      const it = ITEMS[id]; if (!it) continue;
+      const price = Math.ceil(it.val * 1.3);
+      const can = p.gold >= price;
+      const stat = it.hp?`HP+${it.hp}`:it.mp?`MP+${it.mp}`:it.atk?`ATK+${it.atk}`:`DEF+${it.def}`;
+      html += `<div class="shop-item">
+        <span class="shop-item-name" style="color:${can?'#EEE':'#666'}">${it.n}
+          <span style="color:#888;font-size:11px">${stat} · Lv${it.lvl}</span></span>
+        <span style="color:#FFD700;min-width:44px;text-align:right">${price}g</span>
+        <button class="inv-btn" onclick="buyItem(${id},${price})" ${can?'':'disabled style="opacity:.35"'}>COMPRAR</button>
+      </div>`;
+    }
+    if (!(_shopNpc.stock||[]).length) html='<div style="color:#666;padding:16px;text-align:center">Sem estoque.</div>';
+  } else {
+    const sellable = Object.entries(p.inv).filter(([id])=>{const it=ITEMS[id];return it&&it.t!=='gold';});
+    for (const [idStr,cnt] of sellable) {
+      const id=+idStr,it=ITEMS[id];
+      const price = Math.floor(it.val * 0.5);
+      const stat = it.hp?`HP+${it.hp}`:it.mp?`MP+${it.mp}`:it.atk?`ATK+${it.atk}`:`DEF+${it.def}`;
+      html += `<div class="shop-item">
+        <span class="shop-item-name">${it.n} <span style="color:#888;font-size:11px">x${cnt} · ${stat}</span></span>
+        <span style="color:#88FF88;min-width:44px;text-align:right">${price}g</span>
+        <button class="inv-btn" onclick="sellItem(${id},${price})">VENDER</button>
+      </div>`;
+    }
+    if (!sellable.length) html='<div style="color:#666;padding:16px;text-align:center">Sem itens para vender.</div>';
+  }
+  document.getElementById('shopContent').innerHTML = html;
+}
+function buyItem(id, price) {
+  const p = world.player;
+  if (p.gold < price) { world.log('Ouro insuficiente!','#FF4444'); return; }
+  p.gold -= price; p.addItem(id);
+  world.log(`Você comprou ${ITEMS[id].n} por ${price}g.`,'#FFD700');
+  shopTab(_shopTab);
+}
+function sellItem(id, price) {
+  const p = world.player;
+  if (!p.inv[id]) return;
+  p.inv[id]--; if (!p.inv[id]) delete p.inv[id];
+  p.gold += price;
+  world.log(`Você vendeu ${ITEMS[id].n} por ${price}g.`,'#88FF88');
+  shopTab(_shopTab);
+}
+
 document.getElementById('startBtn').addEventListener('click', () => {
   const name = document.getElementById('nameInput').value.trim()||'Herói';
   startGame(name, vocList[selVoc]);
