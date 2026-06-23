@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>PAdventures Sprite Explorer</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0e0b04; color: #c8a050; font-family: monospace; padding: 10px; }
+h1 { color: #ffd700; font-size: 18px; margin-bottom: 10px; }
+
+.tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+.tab {
+  padding: 6px 14px; cursor: pointer; border: 1px solid #3a2a08;
+  background: #0a0800; color: #888; font-family: monospace; font-size: 13px;
+}
+.tab.active { background: #2a1808; color: #ffd700; border-color: #7a5520; }
+
+.controls {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 10px; padding: 8px; background: #120f02; border: 1px solid #3a2a08;
+}
+.controls label { font-size: 12px; color: #888; }
+.controls input[type=number] {
+  width: 72px; background: #1a1208; color: #ffd700; border: 1px solid #5a3a10;
+  padding: 5px 6px; font-family: monospace; font-size: 13px;
+}
+.btn {
+  padding: 5px 12px; background: #2a1808; color: #c8a050; border: 1px solid #5a3a10;
+  cursor: pointer; font-family: monospace; font-size: 13px;
+}
+.btn:hover { background: #3a2818; color: #ffd700; }
+.btn.green { background: #0a2010; color: #00cc66; border-color: #00aa44; }
+.btn.green:hover { background: #0a3018; }
+#status { font-size: 12px; color: #666; margin-left: 4px; }
+
+.quick-ranges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.qr-btn {
+  padding: 4px 10px; background: #180e04; color: #a08040; border: 1px solid #3a2a08;
+  cursor: pointer; font-family: monospace; font-size: 11px;
+}
+.qr-btn:hover { background: #2a1808; color: #ffd700; }
+
+.layout { display: flex; gap: 10px; }
+.grid-wrap { flex: 1; min-width: 0; }
+.grid {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  max-height: calc(100vh - 200px); overflow-y: auto;
+  padding: 6px; background: #080600; border: 1px solid #2a1808;
+}
+.sprite-cell {
+  width: 72px; text-align: center; cursor: pointer;
+  border: 2px solid #2a1808; padding: 4px; background: #0e0b04;
+  transition: border-color 0.1s; flex-shrink: 0;
+}
+.sprite-cell:hover { border-color: #ffd700; }
+.sprite-cell.selected { border-color: #00cc66; background: #050f08; }
+.sprite-cell.missing { opacity: 0.2; pointer-events: none; }
+.sprite-cell img {
+  width: 64px; height: 64px; image-rendering: pixelated;
+  display: block; background: #111; min-height: 64px;
+}
+.sprite-cell .sid { font-size: 10px; color: #666; margin-top: 3px; }
+.sprite-cell .slabel {
+  width: 68px; font-size: 9px; background: #0a0800; color: #ffd700;
+  border: 1px solid #2a1808; padding: 2px 3px; margin-top: 3px;
+  font-family: monospace;
+}
+.sprite-cell.selected .sid { color: #00cc66; }
+
+/* Selected panel */
+.panel {
+  width: 260px; flex-shrink: 0;
+  background: #0a0800; border: 1px solid #3a2a08; padding: 10px;
+  max-height: calc(100vh - 120px); overflow-y: auto; align-self: flex-start;
+  position: sticky; top: 10px;
+}
+.panel h3 { color: #ffd700; font-size: 14px; margin-bottom: 8px; border-bottom: 1px solid #2a1808; padding-bottom: 6px; }
+.sel-entry {
+  display: flex; gap: 6px; align-items: center; padding: 4px 0;
+  border-bottom: 1px solid #1a1208; font-size: 11px;
+}
+.sel-entry img { width: 32px; height: 32px; image-rendering: pixelated; background: #111; }
+.sel-entry .info { flex: 1; min-width: 0; }
+.sel-entry .info .lbl { color: #ffd700; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sel-entry .info .iid { color: #666; font-size: 10px; }
+.sel-entry .rm { color: #884444; cursor: pointer; font-size: 14px; padding: 0 4px; }
+.sel-entry .rm:hover { color: #cc4444; }
+.empty-msg { color: #444; font-size: 12px; text-align: center; padding: 20px 0; }
+.copy-area { margin-top: 10px; }
+.copy-area textarea {
+  width: 100%; height: 140px; background: #060400; color: #88cc88;
+  border: 1px solid #2a1808; font-family: monospace; font-size: 10px; padding: 6px; resize: none;
+}
+</style>
+</head>
+<body>
+<h1>🎮 PAdventures Sprite Explorer</h1>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" onclick="setCategory('item')">Items / Tiles</div>
+  <div class="tab" onclick="setCategory('creature')">Criaturas</div>
+  <div class="tab" onclick="setCategory('effect')">Efeitos</div>
+  <div class="tab" onclick="setCategory('missile')">Projéteis</div>
+</div>
+
+<div class="quick-ranges" id="quickRanges"></div>
+
+<div class="controls">
+  <label>ID início:</label>
+  <input type="number" id="rangeStart" value="100">
+  <label>fim:</label>
+  <input type="number" id="rangeEnd" value="300">
+  <button class="btn" onclick="load()">▶ Carregar</button>
+  <button class="btn" onclick="navPrev()">◀ Anterior</button>
+  <button class="btn" onclick="navNext()">Próximo ▶</button>
+  <span id="status">—</span>
+</div>
+
+<div class="layout">
+  <div class="grid-wrap">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Selecionados (<span id="selCount">0</span>)</h3>
+    <div id="selList"><div class="empty-msg">Clique nos sprites<br>para selecionar</div></div>
+    <div class="copy-area">
+      <button class="btn green" style="width:100%;margin-bottom:6px" onclick="buildMapping()">
+        📋 Gerar Mapeamento JS
+      </button>
+      <textarea id="mappingOut" placeholder="O código aparece aqui após clicar..."></textarea>
+    </div>
+  </div>
+</div>
+
+<script>
+const CDN = 'https://cdn.jsdelivr.net/gh/DistTopic/padventures-sprites@main/sprites';
+
+const QUICK = {
+  item: [
+    ['Chão 0-200',    0,    200],
+    ['Chão 200-500',  200,  500],
+    ['Objetos 500-1k',500, 1000],
+    ['Itens 1k-2k',  1000, 2000],
+    ['Itens 2k-4k',  2000, 4000],
+    ['Equip 4k-8k',  4000, 8000],
+    ['Equip 8k-12k', 8000,12000],
+  ],
+  creature: [
+    ['Criaturas 40036-40200', 40036, 40200],
+    ['Criaturas 40200-40400', 40200, 40400],
+    ['Criaturas 40400-40600', 40400, 40600],
+    ['Criaturas 40600-40800', 40600, 40800],
+    ['Criaturas 40800-41000', 40800, 41000],
+  ],
+  effect:  [['Efeitos 0-300', 0, 300]],
+  missile: [['Projéteis 0-300', 0, 300]],
+};
+
+let cat = 'item';
+let selected = {}; // key "cat_id" -> label
+let curStart = 100, curEnd = 300;
+
+function setCategory(c) {
+  cat = c;
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['item','creature','effect','missile'][i] === c);
+  });
+  buildQuickRanges();
+  const q = QUICK[c];
+  if (q && q[0]) {
+    curStart = q[0][1]; curEnd = q[0][2];
+    document.getElementById('rangeStart').value = curStart;
+    document.getElementById('rangeEnd').value   = curEnd;
+  }
+  load();
+}
+
+function buildQuickRanges() {
+  const el = document.getElementById('quickRanges');
+  el.innerHTML = (QUICK[cat]||[]).map(([label, s, e]) =>
+    `<button class="qr-btn" onclick="jumpRange(${s},${e})">${label}</button>`
+  ).join('');
+}
+
+function jumpRange(s, e) {
+  curStart = s; curEnd = e;
+  document.getElementById('rangeStart').value = s;
+  document.getElementById('rangeEnd').value   = e;
+  load();
+}
+
+function load() {
+  curStart = parseInt(document.getElementById('rangeStart').value) || 0;
+  curEnd   = parseInt(document.getElementById('rangeEnd').value)   || 200;
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  let ok = 0, miss = 0, total = curEnd - curStart + 1;
+  document.getElementById('status').textContent = `Carregando ${total} sprites...`;
+
+  for (let id = curStart; id <= curEnd; id++) {
+    const key = `${cat}_${id}`;
+    const url = `${CDN}/${cat}/${id}.png`;
+    const isSel = selected[key] !== undefined;
+
+    const cell = document.createElement('div');
+    cell.className = 'sprite-cell' + (isSel ? ' selected' : '');
+    cell.dataset.key = key;
+    cell.dataset.id  = id;
+    cell.innerHTML = `
+      <img src="${url}" alt="${id}" loading="lazy">
+      <div class="sid">#${id}</div>
+      <input class="slabel" placeholder="ex: grama" value="${isSel ? selected[key] : ''}"
+             oninput="updateLabel('${key}',this.value)"
+             onclick="event.stopPropagation()">
+    `;
+
+    const img = cell.querySelector('img');
+    img.onload  = () => { ok++;   tick(ok, miss, total); };
+    img.onerror = () => { miss++; cell.classList.add('missing'); tick(ok, miss, total); };
+
+    cell.addEventListener('click', () => toggleSel(key, id, cell));
+    grid.appendChild(cell);
+  }
+}
+
+function tick(ok, miss, total) {
+  const done = ok + miss;
+  if (done % 20 === 0 || done === total)
+    document.getElementById('status').textContent =
+      `${ok} carregados · ${miss} ausentes de ${total}`;
+}
+
+function toggleSel(key, id, cell) {
+  if (selected[key] !== undefined) {
+    delete selected[key];
+    cell.classList.remove('selected');
+    cell.querySelector('.sid').style.color = '';
+  } else {
+    const lbl = cell.querySelector('.slabel').value.trim();
+    selected[key] = lbl;
+    cell.classList.add('selected');
+    cell.querySelector('.sid').style.color = '#00cc66';
+  }
+  renderPanel();
+}
+
+function updateLabel(key, val) {
+  if (selected[key] !== undefined) { selected[key] = val; renderPanel(); }
+}
+
+function renderPanel() {
+  const list = document.getElementById('selList');
+  const entries = Object.entries(selected);
+  document.getElementById('selCount').textContent = entries.length;
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty-msg">Clique nos sprites<br>para selecionar</div>';
+    return;
+  }
+  list.innerHTML = entries.map(([key, lbl]) => {
+    const [c, id] = key.split('_');
+    return `<div class="sel-entry">
+      <img src="${CDN}/${c}/${id}.png" onerror="this.style.opacity=.3">
+      <div class="info">
+        <div class="lbl">${lbl || '(sem nome)'}</div>
+        <div class="iid">${c} #${id}</div>
+      </div>
+      <span class="rm" onclick="removeSel('${key}')">✕</span>
+    </div>`;
+  }).join('');
+}
+
+function removeSel(key) {
+  delete selected[key];
+  renderPanel();
+  document.querySelectorAll(`.sprite-cell[data-key="${key}"]`).forEach(c => {
+    c.classList.remove('selected');
+    c.querySelector('.sid').style.color = '';
+  });
+}
+
+function buildMapping() {
+  const entries = Object.entries(selected);
+  if (!entries.length) { document.getElementById('mappingOut').value = '// Nenhum sprite selecionado'; return; }
+  const lines = entries.map(([key, lbl]) => {
+    const [c, id] = key.split('_');
+    const name = lbl || key;
+    return `  '${name}': { cat:'${c}', id:${id}, url:'${CDN}/${c}/${id}.png' }`;
+  });
+  const code = `const SPRITE_MAP = {\n${lines.join(',\n')}\n};\n\n` +
+    `// Cole esse objeto no index.html do jogo\n` +
+    `// Uso: SPRITE_MAP['grama'].url`;
+  document.getElementById('mappingOut').value = code;
+  try { navigator.clipboard.writeText(code); } catch(e) {}
+}
+
+function navPrev() {
+  const size = curEnd - curStart;
+  curStart = Math.max(0, curStart - size - 1);
+  curEnd   = curStart + size;
+  document.getElementById('rangeStart').value = curStart;
+  document.getElementById('rangeEnd').value   = curEnd;
+  load();
+}
+function navNext() {
+  const size = curEnd - curStart;
+  curStart = curEnd + 1;
+  curEnd   = curStart + size;
+  document.getElementById('rangeStart').value = curStart;
+  document.getElementById('rangeEnd').value   = curEnd;
+  load();
+}
+
+// Init
+buildQuickRanges();
+renderPanel();
+load();
+</script>
+</body>
+</html>
