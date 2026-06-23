@@ -2305,9 +2305,7 @@ class CdnSprites {
   }
 
   tile(type, seed) {
-    const e = TILE_SPR[type]; if (!e) return null;
-    const [cat, ids] = e;
-    return this._ready(`${cat}/${ids[seed % ids.length]}`);
+    return null; // IDs a mapear via sprite-explorer — usa pixel art procedural por enquanto
   }
 
   creature(idx) {
