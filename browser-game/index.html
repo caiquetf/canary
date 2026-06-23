@@ -107,6 +107,7 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
     <button class="abtn" id="btnMp">✦<br>MP</button>
     <button class="abtn" id="btnInv">🎒<br>INV</button>
     <button class="abtn" id="btnSave">💾<br>SAL</button>
+    <button class="abtn" id="btnMute">🔊<br>SOM</button>
   </div>
   <div id="spellBar"></div>
 </div>
@@ -457,6 +458,108 @@ const TOWN_SPAWNS=[
   {name:'Aldeia do Sul',   x:60, y:90},
 ];
 
+// ═══ SOUND ENGINE (Web Audio API — no external files) ═══
+class SoundEngine {
+  constructor(){
+    try{ this.ctx=new(window.AudioContext||window.webkitAudioContext)(); }
+    catch(e){ this.ctx=null; }
+    this.muted=false;
+    this._lastStep=0;
+  }
+  _resume(){ if(this.ctx?.state==='suspended')this.ctx.resume(); }
+  // Master gain + connect to destination
+  _bus(vol){
+    if(!this.ctx||this.muted)return null;
+    this._resume();
+    const g=this.ctx.createGain(); g.gain.value=vol;
+    g.connect(this.ctx.destination); return g;
+  }
+  // Single oscillator with optional frequency ramp
+  _osc(type,freq,dur,vol=0.25,freqEnd=null,delay=0){
+    const bus=this._bus(vol); if(!bus)return;
+    const t=this.ctx.currentTime+delay;
+    const o=this.ctx.createOscillator(); o.type=type;
+    o.frequency.setValueAtTime(freq,t);
+    if(freqEnd)o.frequency.exponentialRampToValueAtTime(freqEnd,t+dur);
+    bus.gain.setValueAtTime(vol,t);
+    bus.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    o.connect(bus); o.start(t); o.stop(t+dur+0.01);
+  }
+  // White noise burst through bandpass
+  _noise(dur,vol=0.12,freq=500){
+    const bus=this._bus(vol); if(!bus)return;
+    const t=this.ctx.currentTime;
+    const n=this.ctx.sampleRate*dur;
+    const buf=this.ctx.createBuffer(1,n,this.ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+    const src=this.ctx.createBufferSource(); src.buffer=buf;
+    const bp=this.ctx.createBiquadFilter(); bp.type='bandpass';
+    bp.frequency.value=freq; bp.Q.value=1;
+    src.connect(bp); bp.connect(bus); src.start(t);
+  }
+  // ── Sounds ───────────────────────────────────────────
+  step(){
+    const now=Date.now(); if(now-this._lastStep<80)return; this._lastStep=now;
+    this._noise(0.035,0.05,300);
+  }
+  swing(){ this._osc('sawtooth',380,0.12,0.18,70); }
+  hit(){   this._osc('square',  200,0.08,0.28,55); }         // player takes damage
+  monsterHit(){ this._osc('sawtooth',150,0.07,0.14,50); }
+  monsterDie(){
+    this._osc('square',110,0.22,0.18,35);
+    setTimeout(()=>this._noise(0.1,0.1,200),60);
+  }
+  levelUp(){
+    [523,659,784,1047].forEach((f,i)=>this._osc('sine',f,0.28,0.28,null,i*0.11));
+  }
+  coin(){ this._osc('triangle',1500,0.14,0.22,750); }
+  potion(){
+    this._osc('sine',700,0.18,0.2,1400);
+    this._osc('sine',900,0.12,0.14,1400,0.06);
+  }
+  equip(){
+    this._osc('triangle',350,0.08,0.22);
+    this._osc('triangle',500,0.08,0.18,null,0.09);
+  }
+  spellRanged(){ this._osc('sine',900,0.14,0.22,250); }
+  spellArea(){
+    this._osc('sawtooth',220,0.28,0.28,50);
+    setTimeout(()=>this._noise(0.18,0.18,250),40);
+  }
+  spellHeal(){
+    [380,560,750].forEach((f,i)=>this._osc('sine',f,0.3,0.22,null,i*0.09));
+  }
+  spellBuff(){
+    [280,420,600,840].forEach((f,i)=>this._osc('triangle',f,0.14,0.2,null,i*0.07));
+  }
+  spellMelee(){ this._osc('sawtooth',430,0.1,0.28,90); }
+  spellLine(){
+    this._osc('sine',1100,0.18,0.22,400);
+    this._osc('sawtooth',600,0.1,0.14,200,0.04);
+  }
+  death(){
+    [420,310,220,160].forEach((f,i)=>this._osc('sine',f,0.38,0.28,null,i*0.19));
+  }
+  respawn(){
+    [300,420,600,840,1080].forEach((f,i)=>this._osc('sine',f,0.28,0.22,null,i*0.11));
+  }
+  dungeonEnter(){
+    this._osc('sawtooth',140,0.55,0.28,55);
+    setTimeout(()=>this._noise(0.25,0.18,150),110);
+  }
+  dungeonExit(){ this._osc('sine',350,0.55,0.32,900); }
+  shop(){
+    this.coin();
+    this._osc('triangle',1100,0.1,0.14,600,0.12);
+  }
+  save(){
+    [750,950,1150].forEach((f,i)=>this._osc('triangle',f,0.14,0.16,null,i*0.09));
+  }
+  toggleMute(){ this.muted=!this.muted; return this.muted; }
+}
+const sfx = new SoundEngine();
+
 class DungeonMap {
   constructor(difficulty){
     this.data=Array.from({length:MAP_H},()=>Array(MAP_W).fill('V'));
@@ -598,6 +701,7 @@ class Player extends Entity {
     if(!this.removeItem(id))return false;
     if(it.hp)this.heal(it.hp);
     if(it.mp)this.restoreMp(it.mp);
+    sfx.potion();
     return true;
   }
   gainXp(v){
@@ -700,9 +804,10 @@ class World {
       const drops=m.dropLoot();
       drops.forEach(id=>p.addItem(id));
       if(drops.length)this.log(`${m.name} largou: ${drops.map(id=>ITEMS[id]?.n||'?').join(', ')}`,'#FFD700');
+      if(drops.some(id=>ITEMS[id]?.t==='gold'||ITEMS[id]?.t==='loot'))sfx.coin();
       const leveled=p.gainXp(m.xpReward);
       this.log(`+${m.xpReward} XP de ${m.name}.`,'#00CC00');
-      if(leveled){this.log(`>>> LEVEL UP! Você é nível ${p.level}! <<<`,'#FFD700');setTimeout(saveGame,100);}
+      if(leveled){this.log(`>>> LEVEL UP! Você é nível ${p.level}! <<<`,'#FFD700');sfx.levelUp();setTimeout(saveGame,100);}
     });
     this.monsters=this.monsters.filter(m=>m.alive);
     this._updateAI();
@@ -737,6 +842,7 @@ class World {
           const actual=p.damage(dmg);
           this.float(`-${actual}`,p.x,p.y,'#FF4444');
           this.events.push({t:'blood',x:p.x,y:p.y});
+          sfx.hit();
           if(!p.alive)this._onDeath();
         } else if(dist>1&&m.moveCd===0){
           m.moveCd=Math.max(1,8-Math.floor(m.spd/2));
@@ -786,11 +892,13 @@ class World {
     const crit=Math.random()<.10;
     const base=p.totalAtk+Math.floor(Math.random()*7)-3;
     const dmg=crit?base*2:base;
+    sfx.swing();
     const actual=target.damage(dmg);
     this.log(`${crit?'CRÍTICO! ':''}Você causa ${actual} em ${target.name}.`,crit?'#FFD700':'#FFFFFF');
     this.float(`-${actual}`,target.x,target.y,crit?'#FFD700':'#FF4444');
     this.events.push({t:crit?'crit':'blood',x:target.x,y:target.y});
-    if(!target.alive)this.log(`Você matou ${target.name}!`,'#00FF00');
+    if(!target.alive){this.log(`Você matou ${target.name}!`,'#00FF00');sfx.monsterDie();}
+    else sfx.monsterHit();
   }
   useHpPotion(){
     const p=this.player;
@@ -816,6 +924,9 @@ class World {
     if(p.mp<spell.mp){this.log(`MP insuficiente para ${spell.name}!`,'#4444FF'); return;}
     p.mp-=spell.mp;
     p.spellCds[spell.id]=spell.cd;
+    const spellSfx={melee:'spellMelee',area_melee:'spellArea',ranged:'spellRanged',
+      area_ranged:'spellArea',line:'spellLine',heal:'spellHeal',buff:'spellBuff',all_ranged:'spellArea'};
+    sfx[spellSfx[spell.t]||'spellRanged']?.();
     switch(spell.t){
       case 'melee':       this._sMelee(spell);      break;
       case 'area_melee':  this._sAreaMelee(spell);  break;
@@ -913,6 +1024,7 @@ class World {
   _onDeath(){
     if(this._deathShown)return;
     this._deathShown=true;
+    sfx.death();
     this.log('Você foi morto!','#FF0000');
     const p=this.player;
     const lost=Math.floor(p.gold*0.1);
@@ -953,6 +1065,7 @@ class World {
     this.map.reveal(p.x,p.y,10);
     this._deathShown=false;
     document.getElementById('deathModal').classList.remove('show');
+    sfx.respawn();
     this.log(`Renasceu em ${town.name}. Perdeu ${lost} gold.`,'#FF8800');
     setTimeout(saveGame,200);
   }
@@ -1050,12 +1163,14 @@ class World {
     this.map.reveal(this.player.x,this.player.y,10);
     this.currentFloor=d.diff;
     const name=DUNGEON_NAMES[d.diff-1]||'Masmorra';
+    sfx.dungeonEnter();
     this.log(`Você entrou na ${name}! Cuidado!`,'#FF8800');
   }
   exitDungeon(){
     this.map=this._surfaceMap;this.monsters=this._surfaceMonsters;
     this.player.x=this._surfacePx;this.player.y=this._surfacePy;
     this.currentFloor=0;
+    sfx.dungeonExit();
     this.log('Você retornou à superfície!','#00FF88');
   }
   _checkTransition(){
@@ -2729,6 +2844,7 @@ function saveGame() {
   };
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    sfx.save();
     world.log('Jogo salvo!','#44FF88');
   } catch(e) { world.log('Erro ao salvar!','#FF4444'); }
 }
@@ -2813,6 +2929,7 @@ function doMove(dir) {
     world._preMoveX=p.x; world._preMoveY=p.y;
     p.x=nx; p.y=ny;
     if(world.currentFloor===0){world._surfacePx=p.x;world._surfacePy=p.y;}
+    sfx.step();
     world._checkTransition();
   }
 }
@@ -2841,6 +2958,10 @@ function bindInput() {
   document.getElementById('btnMp').addEventListener('click', ()=>world.useMpPotion());
   document.getElementById('btnInv').addEventListener('click', openInventory);
   document.getElementById('btnSave').addEventListener('click', saveGame);
+  document.getElementById('btnMute').addEventListener('click', ()=>{
+    const muted = sfx.toggleMute();
+    document.getElementById('btnMute').innerHTML = `${muted?'🔇':'🔊'}<br>SOM`;
+  });
 
   const keyMap = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
                   w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
@@ -2921,7 +3042,7 @@ function openInventory() {
   document.getElementById('invModal').classList.add('show');
 }
 window.useItem   = id => { world.player.useConsumable(id); openInventory(); };
-window.equipItem = id => { world.player.equip(id); world.log(`Equipou ${ITEMS[id].n}!`,'#88FF88'); openInventory(); };
+window.equipItem = id => { world.player.equip(id); sfx.equip(); world.log(`Equipou ${ITEMS[id].n}!`,'#88FF88'); openInventory(); };
 document.getElementById('invClose').addEventListener('click', ()=>document.getElementById('invModal').classList.remove('show'));
 
 // ─── CHARACTER SELECT ─────────────────────────────────
@@ -2992,6 +3113,7 @@ function buyItem(id, price) {
   const p = world.player;
   if (p.gold < price) { world.log('Ouro insuficiente!','#FF4444'); return; }
   p.gold -= price; p.addItem(id);
+  sfx.shop();
   world.log(`Você comprou ${ITEMS[id].n} por ${price}g.`,'#FFD700');
   shopTab(_shopTab);
 }
@@ -3000,6 +3122,7 @@ function sellItem(id, price) {
   if (!p.inv[id]) return;
   p.inv[id]--; if (!p.inv[id]) delete p.inv[id];
   p.gold += price;
+  sfx.shop();
   world.log(`Você vendeu ${ITEMS[id].n} por ${price}g.`,'#88FF88');
   shopTab(_shopTab);
 }
