@@ -176,62 +176,135 @@ const TILE_DEF = {
 };
 
 const ITEMS = {
-  1:  {n:'Sword',         t:'weapon', atk:10, def:0,  hp:0,   mp:0,   val:50,  lvl:1,  color:'#BBBBBB'},
-  2:  {n:'Long Sword',    t:'weapon', atk:18, def:0,  hp:0,   mp:0,   val:150, lvl:10, color:'#AAAAAA'},
-  3:  {n:'2H Sword',      t:'weapon', atk:28, def:0,  hp:0,   mp:0,   val:400, lvl:20, color:'#999999'},
-  4:  {n:'Axe',           t:'weapon', atk:9,  def:0,  hp:0,   mp:0,   val:40,  lvl:1,  color:'#888888'},
-  5:  {n:'Battle Axe',    t:'weapon', atk:20, def:0,  hp:0,   mp:0,   val:200, lvl:15, color:'#777777'},
-  6:  {n:'Club',          t:'weapon', atk:6,  def:0,  hp:0,   mp:0,   val:20,  lvl:1,  color:'#8B4513'},
-  8:  {n:'Leather Armor', t:'armor',  atk:0,  def:8,  hp:0,   mp:0,   val:60,  lvl:1,  color:'#8B4513'},
-  9:  {n:'Chain Armor',   t:'armor',  atk:0,  def:14, hp:0,   mp:0,   val:200, lvl:10, color:'#999999'},
-  10: {n:'Plate Armor',   t:'armor',  atk:0,  def:22, hp:0,   mp:0,   val:800, lvl:25, color:'#BBBBBB'},
-  11: {n:'Leather Helm',  t:'helmet', atk:0,  def:3,  hp:0,   mp:0,   val:30,  lvl:1,  color:'#8B4513'},
-  12: {n:'Iron Helmet',   t:'helmet', atk:0,  def:8,  hp:0,   mp:0,   val:150, lvl:10, color:'#999999'},
-  13: {n:'Wood Shield',   t:'shield', atk:0,  def:5,  hp:0,   mp:0,   val:25,  lvl:1,  color:'#8B4513'},
-  14: {n:'Iron Shield',   t:'shield', atk:0,  def:12, hp:0,   mp:0,   val:180, lvl:8,  color:'#888888'},
-  20: {n:'HP Potion',     t:'potion', atk:0,  def:0,  hp:100, mp:0,   val:50,  lvl:1,  color:'#CC0000'},
-  21: {n:'Str HP Potion', t:'potion', atk:0,  def:0,  hp:250, mp:0,   val:120, lvl:10, color:'#FF0000'},
-  22: {n:'MP Potion',     t:'potion', atk:0,  def:0,  hp:0,   mp:100, val:50,  lvl:1,  color:'#0044CC'},
-  23: {n:'Str MP Potion', t:'potion', atk:0,  def:0,  hp:0,   mp:250, val:120, lvl:10, color:'#0000FF'},
-  30: {n:'Gold Coin',     t:'gold',   atk:0,  def:0,  hp:0,   mp:0,   val:1,   lvl:1,  color:'#FFD700'},
-  31: {n:'Platinum Coin', t:'gold',   atk:0,  def:0,  hp:0,   mp:0,   val:100, lvl:1,  color:'#E5E4E2'},
+  // ── SWORDS ─────────────────────────────────────────────────────────────
+  1:  {n:'Sword',              t:'weapon', atk:10, def:0,  hp:0,   mp:0,  val:50,    lvl:1,  color:'#BBBBBB'},
+  2:  {n:'Long Sword',         t:'weapon', atk:18, def:0,  hp:0,   mp:0,  val:150,   lvl:10, color:'#AAAAAA'},
+  3:  {n:'2H Sword',           t:'weapon', atk:28, def:0,  hp:0,   mp:0,  val:400,   lvl:20, color:'#999999'},
+  7:  {n:'Knight Sword',       t:'weapon', atk:38, def:0,  hp:0,   mp:0,  val:900,   lvl:35, color:'#CCCCDD'},
+  32: {n:'Giant Sword',        t:'weapon', atk:50, def:0,  hp:0,   mp:0,  val:2500,  lvl:50, color:'#DDDDEE'},
+  33: {n:'Bright Sword',       t:'weapon', atk:65, def:0,  hp:0,   mp:0,  val:8000,  lvl:70, color:'#EEEEFF'},
+  // ── AXES ───────────────────────────────────────────────────────────────
+  4:  {n:'Axe',                t:'weapon', atk:9,  def:0,  hp:0,   mp:0,  val:40,    lvl:1,  color:'#888888'},
+  5:  {n:'Battle Axe',         t:'weapon', atk:20, def:0,  hp:0,   mp:0,  val:200,   lvl:15, color:'#777777'},
+  34: {n:'War Axe',            t:'weapon', atk:32, def:0,  hp:0,   mp:0,  val:600,   lvl:30, color:'#8888AA'},
+  35: {n:'Chaos Mace',         t:'weapon', atk:48, def:0,  hp:0,   mp:0,  val:2000,  lvl:50, color:'#AA88AA'},
+  // ── CLUBS ──────────────────────────────────────────────────────────────
+  6:  {n:'Club',               t:'weapon', atk:6,  def:0,  hp:0,   mp:0,  val:20,    lvl:1,  color:'#8B4513'},
+  36: {n:'Mace',               t:'weapon', atk:14, def:0,  hp:0,   mp:0,  val:120,   lvl:8,  color:'#9C5614'},
+  37: {n:'War Hammer',         t:'weapon', atk:25, def:0,  hp:0,   mp:0,  val:350,   lvl:22, color:'#7A4010'},
+  // ── PALADIN (ranged) ───────────────────────────────────────────────────
+  38: {n:'Short Bow',          t:'weapon', atk:12, def:0,  hp:0,   mp:0,  val:80,    lvl:1,  color:'#8B6914'},
+  39: {n:'Crossbow',           t:'weapon', atk:22, def:0,  hp:0,   mp:0,  val:300,   lvl:12, color:'#AA8820'},
+  40: {n:'Elven Bow',          t:'weapon', atk:35, def:0,  hp:0,   mp:0,  val:800,   lvl:28, color:'#88AA44'},
+  41: {n:'Arbalest',           t:'weapon', atk:52, def:0,  hp:0,   mp:0,  val:3000,  lvl:55, color:'#AABBCC'},
+  // ── MAGE (wands/rods) ──────────────────────────────────────────────────
+  42: {n:'Wand of Decay',      t:'weapon', atk:8,  def:0,  hp:0,   mp:0,  val:100,   lvl:1,  color:'#AA44CC'},
+  43: {n:'Wand of Inferno',    t:'weapon', atk:18, def:0,  hp:0,   mp:0,  val:350,   lvl:14, color:'#FF4400'},
+  44: {n:'Snakebite Rod',      t:'weapon', atk:28, def:0,  hp:0,   mp:0,  val:700,   lvl:26, color:'#44CC44'},
+  45: {n:'Wand of Cosmic',     t:'weapon', atk:45, def:0,  hp:0,   mp:0,  val:2200,  lvl:48, color:'#4488FF'},
+  // ── ARMOR ──────────────────────────────────────────────────────────────
+  8:  {n:'Leather Armor',      t:'armor',  atk:0,  def:8,  hp:0,   mp:0,  val:60,    lvl:1,  color:'#8B4513'},
+  9:  {n:'Chain Armor',        t:'armor',  atk:0,  def:14, hp:0,   mp:0,  val:200,   lvl:10, color:'#999999'},
+  10: {n:'Plate Armor',        t:'armor',  atk:0,  def:22, hp:0,   mp:0,  val:800,   lvl:25, color:'#BBBBBB'},
+  46: {n:'Golden Armor',       t:'armor',  atk:0,  def:30, hp:0,   mp:0,  val:2500,  lvl:40, color:'#FFD700'},
+  47: {n:'Dragon Scale Armor', t:'armor',  atk:0,  def:40, hp:0,   mp:0,  val:8000,  lvl:60, color:'#CC3300'},
+  48: {n:'Magic Plate Armor',  t:'armor',  atk:0,  def:52, hp:0,   mp:0,  val:25000, lvl:80, color:'#88BBFF'},
+  // ── HELMETS ────────────────────────────────────────────────────────────
+  11: {n:'Leather Helm',       t:'helmet', atk:0,  def:3,  hp:0,   mp:0,  val:30,    lvl:1,  color:'#8B4513'},
+  12: {n:'Iron Helmet',        t:'helmet', atk:0,  def:8,  hp:0,   mp:0,  val:150,   lvl:10, color:'#999999'},
+  49: {n:'Full Plate Helmet',  t:'helmet', atk:0,  def:14, hp:0,   mp:0,  val:500,   lvl:25, color:'#BBBBBB'},
+  50: {n:'Crown Helmet',       t:'helmet', atk:0,  def:20, hp:0,   mp:0,  val:2000,  lvl:50, color:'#FFD700'},
+  // ── LEGS ───────────────────────────────────────────────────────────────
+  51: {n:'Leather Legs',       t:'legs',   atk:0,  def:4,  hp:0,   mp:0,  val:35,    lvl:1,  color:'#8B4513'},
+  52: {n:'Chain Legs',         t:'legs',   atk:0,  def:9,  hp:0,   mp:0,  val:160,   lvl:10, color:'#999999'},
+  53: {n:'Plate Legs',         t:'legs',   atk:0,  def:16, hp:0,   mp:0,  val:600,   lvl:25, color:'#BBBBBB'},
+  54: {n:'Golden Legs',        t:'legs',   atk:0,  def:24, hp:0,   mp:0,  val:3000,  lvl:50, color:'#FFD700'},
+  // ── BOOTS ──────────────────────────────────────────────────────────────
+  55: {n:'Leather Boots',      t:'boots',  atk:0,  def:2,  hp:0,   mp:0,  val:20,    lvl:1,  color:'#8B4513'},
+  56: {n:'Chain Boots',        t:'boots',  atk:0,  def:5,  hp:0,   mp:0,  val:80,    lvl:10, color:'#888888'},
+  57: {n:'Plate Boots',        t:'boots',  atk:0,  def:9,  hp:0,   mp:0,  val:300,   lvl:25, color:'#BBBBBB'},
+  58: {n:'Soft Boots',         t:'boots',  atk:0,  def:6,  hp:0,   mp:0,  val:1500,  lvl:30, color:'#FFCCAA'},
+  // ── SHIELDS ────────────────────────────────────────────────────────────
+  13: {n:'Wood Shield',        t:'shield', atk:0,  def:5,  hp:0,   mp:0,  val:25,    lvl:1,  color:'#8B4513'},
+  14: {n:'Iron Shield',        t:'shield', atk:0,  def:12, hp:0,   mp:0,  val:180,   lvl:8,  color:'#888888'},
+  59: {n:'Dragon Shield',      t:'shield', atk:0,  def:20, hp:0,   mp:0,  val:1500,  lvl:40, color:'#CC3300'},
+  60: {n:'Blessed Shield',     t:'shield', atk:0,  def:30, hp:0,   mp:0,  val:6000,  lvl:65, color:'#EEEEFF'},
+  // ── RINGS ──────────────────────────────────────────────────────────────
+  61: {n:'Ring of Healing',    t:'ring',   atk:0,  def:2,  hp:0,   mp:0,  val:200,   lvl:1,  color:'#FF8888'},
+  62: {n:'Ring of the Sky',    t:'ring',   atk:5,  def:0,  hp:0,   mp:0,  val:500,   lvl:20, color:'#88AAFF'},
+  63: {n:'Stealth Ring',       t:'ring',   atk:0,  def:8,  hp:0,   mp:0,  val:1000,  lvl:35, color:'#444444'},
+  64: {n:'Dragon Ring',        t:'ring',   atk:8,  def:5,  hp:0,   mp:0,  val:4000,  lvl:60, color:'#FF4400'},
+  // ── AMULETS ────────────────────────────────────────────────────────────
+  65: {n:'Stone Skin Amulet',  t:'amulet', atk:0,  def:5,  hp:0,   mp:0,  val:300,   lvl:1,  color:'#AAAAAA'},
+  66: {n:'Might Ring',         t:'amulet', atk:7,  def:0,  hp:0,   mp:0,  val:600,   lvl:25, color:'#FF6600'},
+  67: {n:'Swiftness Amulet',   t:'amulet', atk:4,  def:4,  hp:0,   mp:0,  val:1200,  lvl:40, color:'#88FFFF'},
+  68: {n:'Demon Amulet',       t:'amulet', atk:0,  def:12, hp:0,   mp:0,  val:5000,  lvl:70, color:'#880000'},
+  // ── POTIONS ────────────────────────────────────────────────────────────
+  20: {n:'HP Potion',          t:'potion', atk:0,  def:0,  hp:100, mp:0,  val:50,    lvl:1,  color:'#CC0000'},
+  21: {n:'Str HP Potion',      t:'potion', atk:0,  def:0,  hp:250, mp:0,  val:120,   lvl:10, color:'#FF0000'},
+  22: {n:'MP Potion',          t:'potion', atk:0,  def:0,  hp:0,   mp:100,val:50,    lvl:1,  color:'#0044CC'},
+  23: {n:'Str MP Potion',      t:'potion', atk:0,  def:0,  hp:0,   mp:250,val:120,   lvl:10, color:'#0000FF'},
+  69: {n:'Grt HP Potion',      t:'potion', atk:0,  def:0,  hp:500, mp:0,  val:300,   lvl:30, color:'#FF2222'},
+  70: {n:'Grt MP Potion',      t:'potion', atk:0,  def:0,  hp:0,   mp:500,val:300,   lvl:30, color:'#2222FF'},
+  71: {n:'Ult HP Potion',      t:'potion', atk:0,  def:0,  hp:1000,mp:0,  val:700,   lvl:60, color:'#FF0000'},
+  72: {n:'Ult MP Potion',      t:'potion', atk:0,  def:0,  hp:0,  mp:1000,val:700,   lvl:60, color:'#0000AA'},
+  73: {n:'Elixir of Life',     t:'potion', atk:0,  def:0,  hp:200, mp:200,val:180,   lvl:20, color:'#CC44CC'},
+  // ── FOOD ───────────────────────────────────────────────────────────────
+  74: {n:'Bread',              t:'food',   atk:0,  def:0,  hp:30,  mp:30, val:5,     lvl:1,  color:'#CC9944'},
+  75: {n:'Ham',                t:'food',   atk:0,  def:0,  hp:80,  mp:80, val:15,    lvl:1,  color:'#CC4422'},
+  // ── GOLD ───────────────────────────────────────────────────────────────
+  30: {n:'Gold Coin',          t:'gold',   atk:0,  def:0,  hp:0,   mp:0,  val:1,     lvl:1,  color:'#FFD700'},
+  31: {n:'Platinum Coin',      t:'gold',   atk:0,  def:0,  hp:0,   mp:0,  val:100,   lvl:1,  color:'#E5E4E2'},
+  // ── LOOT DROPS (sell only) ─────────────────────────────────────────────
+  80: {n:'Rat Tail',           t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:2,     lvl:1,  color:'#888888'},
+  81: {n:'Snake Skin',         t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:8,     lvl:1,  color:'#448844'},
+  82: {n:'Wolf Pelt',          t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:25,    lvl:1,  color:'#887766'},
+  83: {n:'Orc Tusk',           t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:60,    lvl:1,  color:'#CCAA88'},
+  84: {n:'Troll Bone',         t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:90,    lvl:1,  color:'#8B6914'},
+  85: {n:'Skeleton Bones',     t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:40,    lvl:1,  color:'#DDDDDD'},
+  86: {n:'Spider Web Silk',    t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:120,   lvl:1,  color:'#CCCCCC'},
+  87: {n:'Zombie Brain',       t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:70,    lvl:1,  color:'#8B8B00'},
+  88: {n:'Dragon Scale',       t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:500,   lvl:1,  color:'#CC3300'},
+  89: {n:'Demon Heart',        t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:2000,  lvl:1,  color:'#880000'},
+  90: {n:'Minotaur Horn',      t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:180,   lvl:1,  color:'#8D3A00'},
+  91: {n:'Slime Goo',          t:'loot',   atk:0,  def:0,  hp:0,   mp:0,  val:15,    lvl:1,  color:'#44CC00'},
 };
 
 // ─── NPC DEFINITIONS ──────────────────────────────────
 const NPC_DEFS = [
   // Town 1 (30,30) — Aldric ferreiro + Brom guerreiro
   {id:'aldric', name:'Aldric',  voc:'Knight',   lvl:20, x:33, y:27, role:'merchant', title:'Ferreiro',
-   stock:[1,4,6,8,11,13,20,22],
+   stock:[1,4,6,36,37,2,5,38,42,8,11,13,51,55,20,22],
    dlg:['Bem-vindo à ferraria!','As melhores armas da região!','Posso equipar qualquer aventureiro.','Compre antes que acabe!']},
   {id:'brom',   name:'Brom',    voc:'Knight',   lvl:25, x:27, y:33, role:'warrior',  title:'Guarda',
    dlg:['Protejo esta cidade!','Esses monstros não passarão!','Juntos somos mais fortes!','Cuidado com as masmorras ao sul.']},
   // Town 2 (90,30) — Mira alquimista + Lyra paladina
   {id:'mira',   name:'Mira',    voc:'Druid',    lvl:18, x:93, y:27, role:'merchant', title:'Alquimista',
-   stock:[20,21,22,23],
+   stock:[20,21,22,23,69,70,73,74,75,61,65],
    dlg:['Poções fresquinhas hoje!','Nunca aventure sem poções!','Minha fórmula é secreta.','Saúde em primeiro lugar!']},
   {id:'lyra',   name:'Lyra',    voc:'Paladin',  lvl:30, x:87, y:33, role:'warrior',  title:'Paladina',
    dlg:['A luz guia meus passos.','Precisa de ajuda, aventureiro?','Minha besta nunca erra.','Há monstros por perto!']},
   // Town 3 (60,90) — Gareth armeiro + Zane sorcerer
   {id:'gareth', name:'Gareth',  voc:'Paladin',  lvl:22, x:63, y:87, role:'merchant', title:'Armeiro',
-   stock:[2,5,9,10,12,14,20,22],
+   stock:[9,10,46,12,49,14,59,52,53,56,57,39,43,44,62,63,66,67,20,22],
    dlg:['Armaduras forjadas à mão!','Proteção é vida, aventureiro.','Veja meu estoque premium.','Forjado para durar séculos.']},
   {id:'zane',   name:'Zane',    voc:'Sorcerer', lvl:35, x:57, y:93, role:'warrior',  title:'Arcano',
    dlg:['O arcanismo é poder.','Meus feitiços afastam o mal.','Você viu os dragões ao leste?','Estude magia, é vital.']},
 ];
 
 const MONSTERS = [
-  ['Rat',          '#C8A850', 20,   5,  2, 3,   5,  4, [[30,.8]],               1],
-  ['Snake',        '#228B22', 30,   8,  3, 4,  10,  5, [[30,.5]],               2],
-  ['Wolf',         '#888888', 80,  15,  8, 5,  25,  5, [[30,1],[30,.5]],         5],
-  ['Orc',          '#556B2F', 150, 22, 14, 4,  60,  6, [[4,.2],[30,1]],         10],
-  ['Troll',        '#8D6E63', 200, 28, 18, 3, 100,  6, [[8,.15],[30,1]],        15],
-  ['Skeleton',     '#DDDDDD', 120, 20, 10, 4,  50,  5, [[30,1],[20,.1]],         8],
-  ['Zombie',       '#5D4037', 180, 25, 12, 2,  80,  5, [[30,1],[20,.15]],       12],
-  ['Giant Spider', '#212121', 250, 35, 20, 5, 150,  6, [[9,.1],[22,.2]],        18],
-  ['Slime',        '#44CC00', 60,  10,  5, 2,  15,  4, [[30,.6]],               3],
-  ['Minotaur',     '#8D3A00', 400, 45, 28, 4, 300,  7, [[2,.15],[31,.5]],       25],
-  ['Dragon',       '#CC2200', 1500,80, 50, 5,2000,  8, [[10,.05],[31,1]],       50],
-  ['Demon',        '#880000', 3000,120,80, 6,6000, 10, [[31,1],[23,.9]],        80],
+  ['Rat',          '#C8A850', 20,   5,  2, 3,   5,  4, [[30,.8],[80,.6]],                       1],
+  ['Snake',        '#228B22', 30,   8,  3, 4,  10,  5, [[30,.5],[81,.5]],                        2],
+  ['Wolf',         '#888888', 80,  15,  8, 5,  25,  5, [[30,1],[82,.4]],                         5],
+  ['Orc',          '#556B2F', 150, 22, 14, 4,  60,  6, [[4,.2],[30,1],[83,.5]],                 10],
+  ['Troll',        '#8D6E63', 200, 28, 18, 3, 100,  6, [[8,.15],[30,1],[84,.35]],               15],
+  ['Skeleton',     '#DDDDDD', 120, 20, 10, 4,  50,  5, [[30,1],[20,.12],[85,.6]],                8],
+  ['Zombie',       '#5D4037', 180, 25, 12, 2,  80,  5, [[30,1],[20,.15],[87,.4]],               12],
+  ['Giant Spider', '#212121', 250, 35, 20, 5, 150,  6, [[9,.1],[22,.2],[86,.5]],                18],
+  ['Slime',        '#44CC00', 60,  10,  5, 2,  15,  4, [[30,.6],[91,.5]],                        3],
+  ['Minotaur',     '#8D3A00', 400, 45, 28, 4, 300,  7, [[2,.15],[31,.5],[90,.6]],               25],
+  ['Dragon',       '#CC2200', 1500,80, 50, 5,2000,  8, [[10,.05],[31,1],[88,.8],[47,.03]],       50],
+  ['Demon',        '#880000', 3000,120,80, 6,6000, 10, [[31,1],[23,.9],[89,.7],[48,.02]],        80],
 ];
 
 // spell: {id, name, mp, cd(ticks), lvl, t(type), val, range?, areaR?, dur?, color, desc}
@@ -475,21 +548,36 @@ class Entity {
   restoreMp(v){this.mp=Math.min(this.maxMp,this.mp+v);}
 }
 
+const EQ_SLOTS = ['weapon','armor','helmet','legs','boots','shield','ring','amulet'];
+
 class Player extends Entity {
   constructor(x,y,name,voc){
     const v=VOCATIONS[voc];
     super(x,y,name,150,50,15,10,4);
     this.voc=voc;this.vocData=v;
     this.level=1;this.xp=0;this.gold=200;
-    this.inv={};this.eq={weapon:null,armor:null,helmet:null,shield:null};
-    this.spellCds={};       // id -> ticks remaining
-    this.atkBuff={val:1,ttl:0}; // multiplier + duration
-    [1,8,11].forEach(id=>{this.addItem(id);this.equip(id);});
+    this.inv={};
+    this.eq={weapon:null,armor:null,helmet:null,legs:null,boots:null,shield:null,ring:null,amulet:null};
+    this.spellCds={};
+    this.atkBuff={val:1,ttl:0};
+    // starting gear
+    [1,8,11,51,55].forEach(id=>{this.addItem(id);this.equip(id);});
     for(let i=0;i<5;i++)this.addItem(20);
     for(let i=0;i<3;i++)this.addItem(22);
+    // visual animation fields (pixel center)
+    this.px=x*32+16; this.py=y*32+16;
   }
-  get totalAtk(){return Math.floor((this.atk+(this.eq.weapon?ITEMS[this.eq.weapon].atk:0))*this.atkBuff.val);}
-  get totalDef(){return this.def+['armor','shield','helmet'].reduce((s,sl)=>s+(this.eq[sl]?ITEMS[this.eq[sl]].def:0),0);}
+  get totalAtk(){
+    const eq=this.eq;
+    const weapAtk=(eq.weapon&&ITEMS[eq.weapon])?ITEMS[eq.weapon].atk:0;
+    const ringAtk=(eq.ring&&ITEMS[eq.ring])?ITEMS[eq.ring].atk:0;
+    const amuAtk=(eq.amulet&&ITEMS[eq.amulet])?ITEMS[eq.amulet].atk:0;
+    return Math.floor((this.atk+weapAtk+ringAtk+amuAtk)*this.atkBuff.val);
+  }
+  get totalDef(){
+    return this.def+['armor','shield','helmet','legs','boots','ring','amulet']
+      .reduce((s,sl)=>s+((this.eq[sl]&&ITEMS[this.eq[sl]])?ITEMS[this.eq[sl]].def:0),0);
+  }
   get xpNext(){return this.level*this.level*100;}
   addItem(id,n=1){
     const it=ITEMS[id];if(!it)return;
@@ -502,11 +590,11 @@ class Player extends Entity {
   }
   equip(id){
     const it=ITEMS[id];if(!it||this.level<it.lvl)return false;
-    const slot=it.t;if(!(slot in this.eq))return false;
+    const slot=it.t;if(!EQ_SLOTS.includes(slot))return false;
     this.eq[slot]=id;return true;
   }
-  usePotion(id){
-    const it=ITEMS[id];if(!it||it.t!=='potion')return false;
+  useConsumable(id){
+    const it=ITEMS[id];if(!it||!['potion','food'].includes(it.t))return false;
     if(!this.removeItem(id))return false;
     if(it.hp)this.heal(it.hp);
     if(it.mp)this.restoreMp(it.mp);
@@ -706,15 +794,15 @@ class World {
   }
   useHpPotion(){
     const p=this.player;
-    for(const id of[21,20]){
-      if(p.inv[id]){const old=p.hp;p.usePotion(id);this.log(`Você usa ${ITEMS[id].n} e recupera ${p.hp-old} HP.`,'#CC0000');return;}
+    for(const id of[71,69,21,20]){
+      if(p.inv[id]){const old=p.hp;p.useConsumable(id);this.log(`Você usa ${ITEMS[id].n} e recupera ${p.hp-old} HP.`,'#CC0000');return;}
     }
     this.log('Sem poções de HP!','#FF0000');
   }
   useMpPotion(){
     const p=this.player;
-    for(const id of[23,22]){
-      if(p.inv[id]){const old=p.mp;p.usePotion(id);this.log(`Você usa ${ITEMS[id].n} e recupera ${p.mp-old} MP.`,'#0044CC');return;}
+    for(const id of[72,70,23,22]){
+      if(p.inv[id]){const old=p.mp;p.useConsumable(id);this.log(`Você usa ${ITEMS[id].n} e recupera ${p.mp-old} MP.`,'#0044CC');return;}
     }
     this.log('Sem poções de MP!','#0000FF');
   }
@@ -2139,9 +2227,9 @@ class Renderer {
     const W = mW + uiW, H = mH + cH;
     const T = TILE;
 
-    // Camera (centered on player)
-    const camX = Math.floor(p.x * T - mW/2 + T/2);
-    const camY = Math.floor(p.y * T - mH/2 + T/2);
+    // Camera (centered on animated player position)
+    const camX = Math.floor(p.px - mW/2);
+    const camY = Math.floor(p.py - mH/2);
 
     // Clip to map area
     ctx.save();
@@ -2205,7 +2293,7 @@ class Renderer {
     }
 
     // ── PLAYER ───────────────────────────────────────
-    const psx = p.x*T-camX, psy = p.y*T-camY;
+    const psx = Math.round(p.px - camX) - T/2, psy = Math.round(p.py - camY) - T/2;
     this._shadow(ctx, psx, psy);
     this._drawEntity(ctx, psx, psy, `p_${p.voc}`, `p_${p.voc}_f`, p.flashTick);
     // Player name
@@ -2419,9 +2507,10 @@ class Renderer {
     label(`ATK: ${p.totalAtk}  DEF: ${p.totalDef}`, '#AAAAAA', false);
     divider();
     label('EQUIPADO:', '#FFD700', true);
-    const slots = {weapon:'⚔',armor:'🛡',helmet:'⛑',shield:'🔰'};
+    const slots = {weapon:'⚔',armor:'🛡',helmet:'⛑',legs:'👖',boots:'👟',shield:'🔰',ring:'💍',amulet:'📿'};
     for (const [sl, ic] of Object.entries(slots)) {
       const eq = p.eq[sl];
+      if (!eq && (sl==='ring'||sl==='amulet')) continue;
       label(eq ? `${ic} ${ITEMS[eq].n}` : `${ic} —`, eq ? '#88FF88' : '#444444', false);
     }
     divider();
@@ -2659,6 +2748,9 @@ function loadGame() {
   p.inv=pd.inv; p.eq=pd.eq;
   p.spellCds=pd.spellCds||{}; p.atkBuff=pd.atkBuff||{val:1,ttl:0};
   p.x=pd.x; p.y=pd.y;
+  p.px=pd.x*TILE+TILE/2; p.py=pd.y*TILE+TILE/2;
+  // Ensure new eq slots exist in old saves
+  for(const sl of EQ_SLOTS){if(!(sl in p.eq))p.eq[sl]=null;}
   world.spawnedZones=new Set(data.zones||[]);
   world._surfacePx=data.spx||pd.x; world._surfacePy=data.spy||pd.y;
   try { world.map.revealed=_unpackFog(data.fog); } catch(e){}
@@ -2689,6 +2781,9 @@ function startGame(name, voc) {
   const player = new Player(30, 30, name||'Herói', voc||'Knight');
   world = new World(player);
   setupLayout();
+  // Re-init pixel position with final TILE value
+  player.px = player.x * TILE + TILE/2;
+  player.py = player.y * TILE + TILE/2;
   bindInput();
   running = true;
   loop();
@@ -2697,6 +2792,13 @@ function startGame(name, voc) {
 function loop() {
   if (!running) return;
   world.update();
+  // Smooth movement animation — lerp visual pos toward logical tile center
+  const _p = world.player;
+  const _tx = _p.x * TILE + TILE/2, _ty = _p.y * TILE + TILE/2;
+  _p.px += (_tx - _p.px) * 0.42;
+  _p.py += (_ty - _p.py) * 0.42;
+  if (Math.abs(_p.px - _tx) < 0.8) _p.px = _tx;
+  if (Math.abs(_p.py - _ty) < 0.8) _p.py = _ty;
   renderer.render(world);
   updateSpellBar();
   setTimeout(loop, 33);
@@ -2766,8 +2868,8 @@ function bindInput() {
       return;
     }
     if (cy > renderer.mapH) return;
-    const camX = world.player.x*TILE - renderer.mapW/2 + TILE/2;
-    const camY = world.player.y*TILE - renderer.mapH/2 + TILE/2;
+    const camX = world.player.px - renderer.mapW/2;
+    const camY = world.player.py - renderer.mapH/2;
     const wx = Math.floor((cx+camX)/TILE);
     const wy = Math.floor((cy+camY)/TILE);
     const npc = world.npcs.find(n=>n.alive&&n.x===wx&&n.y===wy);
@@ -2788,30 +2890,37 @@ function bindInput() {
 // ─── INVENTORY ────────────────────────────────────────
 function openInventory() {
   const p = world.player;
-  const modal = document.getElementById('invModal');
   document.getElementById('invTitle').textContent = `INVENTÁRIO — ${p.name} (Lv.${p.level})`;
-  let html = `<div style="color:#FFD700;font-size:13px">Gold: ${p.gold} | ATK: ${p.totalAtk} | DEF: ${p.totalDef}</div>`;
+  const slotLabel = {weapon:'Arma',armor:'Armadura',helmet:'Capacete',legs:'Calças',
+                     boots:'Botas',shield:'Escudo',ring:'Anel',amulet:'Amuleto'};
+  let html = `<div style="color:#FFD700;font-size:13px;margin-bottom:4px">Gold: ${p.gold} | ATK: ${p.totalAtk} | DEF: ${p.totalDef}</div>`;
   html += `<div class="inv-section-title">EQUIPADO</div>`;
-  const slotN = {weapon:'Arma',armor:'Armor',helmet:'Capacete',shield:'Escudo'};
-  for (const [sl,label] of Object.entries(slotN)) {
+  for (const sl of EQ_SLOTS) {
     const id = p.eq[sl];
-    if (id) {
-      const it = ITEMS[id];
-      html += `<div class="inv-item"><span class="inv-item-name" style="color:#88FF88">${label}: ${it.n} (${it.atk?`ATK+${it.atk}`:`DEF+${it.def}`})</span></div>`;
-    }
+    if (!id) continue;
+    const it = ITEMS[id];
+    const stat = it.atk&&it.def?`ATK+${it.atk} DEF+${it.def}`:it.atk?`ATK+${it.atk}`:`DEF+${it.def}`;
+    html += `<div class="inv-item"><span class="inv-item-name" style="color:#88FF88">${slotLabel[sl]}: ${it.n} <span style="color:#666;font-size:11px">${stat}</span></span></div>`;
   }
   html += `<div class="inv-section-title">ITENS</div>`;
   for (const [idStr,cnt] of Object.entries(p.inv)) {
     const id = +idStr, it = ITEMS[id]; if (!it) continue;
     let extra='', action='';
-    if (it.t==='potion') { extra=it.hp?`HP+${it.hp}`:`MP+${it.mp}`; action=`<button class="inv-btn" onclick="useItem(${id})">USAR</button>`; }
-    else if (['weapon','armor','helmet','shield'].includes(it.t)) { extra=it.atk?`ATK+${it.atk}`:`DEF+${it.def}`; action=`<button class="inv-btn" onclick="equipItem(${id})">EQUIPAR</button>`; }
+    if (it.t==='potion'||it.t==='food') {
+      extra = [it.hp?`HP+${it.hp}`:'', it.mp?`MP+${it.mp}`:''].filter(Boolean).join(' ');
+      action = `<button class="inv-btn" onclick="useItem(${id})">USAR</button>`;
+    } else if (EQ_SLOTS.includes(it.t)) {
+      extra = [it.atk?`ATK+${it.atk}`:'', it.def?`DEF+${it.def}`:''].filter(Boolean).join(' ');
+      action = `<button class="inv-btn" onclick="equipItem(${id})">EQUIPAR</button>`;
+    } else if (it.t==='loot') {
+      extra = `${it.val}g cada`;
+    }
     html += `<div class="inv-item"><span class="inv-item-name">${it.n} x${cnt} <span style="color:#888;font-size:11px">${extra}</span></span>${action}</div>`;
   }
   document.getElementById('invContent').innerHTML = html;
-  modal.classList.add('show');
+  document.getElementById('invModal').classList.add('show');
 }
-window.useItem   = id => { world.player.usePotion(id); openInventory(); };
+window.useItem   = id => { world.player.useConsumable(id); openInventory(); };
 window.equipItem = id => { world.player.equip(id); world.log(`Equipou ${ITEMS[id].n}!`,'#88FF88'); openInventory(); };
 document.getElementById('invClose').addEventListener('click', ()=>document.getElementById('invModal').classList.remove('show'));
 
