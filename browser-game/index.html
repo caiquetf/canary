@@ -145,6 +145,38 @@ const MONSTERS = [
   ['Demon',        '#880000', 3000,120,80, 6,6000, 10, [[31,1],[23,.9]],        80],
 ];
 
+// spell: {id, name, mp, cd(ticks), lvl, t(type), val, range?, areaR?, dur?, color, desc}
+const SPELLS = {
+  Knight: [
+    {id:'berserk',  name:'Berserk',        mp:10, cd:20, lvl:1,  t:'melee',      val:1.5, range:1, color:'#FF6600', desc:'1.5× dano adjacente'},
+    {id:'whirl',    name:'Whirlwind',       mp:20, cd:30, lvl:8,  t:'area_melee', val:1.0, range:1, color:'#FF9900', desc:'Ataca todos adjacentes'},
+    {id:'fierce',   name:'Fierce Berserk',  mp:30, cd:40, lvl:20, t:'melee',      val:2.5, range:1, color:'#CC0000', desc:'2.5× dano adjacente'},
+    {id:'warcry',   name:'War Cry',          mp:15, cd:90, lvl:40, t:'buff',       val:1.5, dur:200, color:'#FFD700', desc:'+50% ATK por 7s'},
+    {id:'brage',    name:'Blood Rage',       mp:50, cd:80, lvl:60, t:'area_melee', val:3.0, range:1, color:'#880000', desc:'3× dano a todos adj.'},
+  ],
+  Paladin: [
+    {id:'dbolt',    name:'Divine Bolt',      mp:10, cd:20, lvl:1,  t:'ranged',     val:1.2, range:4, color:'#8888FF', desc:'Projétil sagrado (4)'},
+    {id:'dmiss',    name:'Divine Missile',   mp:20, cd:25, lvl:8,  t:'ranged',     val:2.0, range:6, color:'#AAAAFF', desc:'Projétil forte (6)'},
+    {id:'hword',    name:'Healing Word',     mp:25, cd:40, lvl:20, t:'heal',       val:100, color:'#00FF88', desc:'Cura 100 HP'},
+    {id:'darrow',   name:'Divine Arrow',     mp:30, cd:35, lvl:40, t:'ranged',     val:3.0, range:6, color:'#EEEEFF', desc:'Flecha sagrada (6)'},
+    {id:'dfury',    name:'Divine Fury',      mp:50, cd:60, lvl:60, t:'area_ranged',val:1.5, range:5, areaR:1, color:'#FFFFFF', desc:'Chuva sagrada 3×3'},
+  ],
+  Sorcerer: [
+    {id:'mmiss',    name:'Magic Missile',    mp:10, cd:15, lvl:1,  t:'ranged',     val:1.8, range:4, color:'#CC44FF', desc:'Projétil mágico (4)'},
+    {id:'fstrike',  name:'Flame Strike',     mp:25, cd:25, lvl:8,  t:'ranged',     val:2.5, range:5, color:'#FF4400', desc:'Raio de fogo (5)'},
+    {id:'gfire',    name:'Great Fireball',   mp:50, cd:40, lvl:20, t:'area_ranged',val:2.0, range:5, areaR:1, color:'#FF8800', desc:'Explosão 3×3'},
+    {id:'ewave',    name:'Energy Wave',      mp:40, cd:35, lvl:40, t:'line',       val:2.5, range:8, color:'#00CCFF', desc:'Linha de energia (8)'},
+    {id:'uexp',     name:'Ult. Explosion',   mp:80, cd:70, lvl:60, t:'area_ranged',val:5.0, range:5, areaR:2, color:'#FFFF00', desc:'Explosão 5×5'},
+  ],
+  Druid: [
+    {id:'lheal',    name:'Light Healing',    mp:10, cd:20, lvl:1,  t:'heal',       val:60,  color:'#00FF88', desc:'Cura 60 HP'},
+    {id:'pstorm',   name:'Poison Storm',     mp:25, cd:30, lvl:8,  t:'area_ranged',val:1.2, range:4, areaR:1, color:'#44FF44', desc:'Veneno 3×3 (4)'},
+    {id:'gheal',    name:'Great Healing',    mp:40, cd:40, lvl:20, t:'heal',       val:200, color:'#00FFAA', desc:'Cura 200 HP'},
+    {id:'wgrow',    name:'Wild Growth',      mp:30, cd:45, lvl:40, t:'area_melee', val:1.5, range:2, color:'#88FF44', desc:'Espinhos raio 2'},
+    {id:'nwrath',   name:"Nature's Wrath",   mp:60, cd:60, lvl:60, t:'all_ranged', val:2.0, range:10,color:'#44FF00', desc:'Raios em todos (10)'},
+  ],
+};
+
 // ═══ A* PATHFINDING ═══
 function aStar(passable, sx, sy, gx, gy, maxSteps=200) {
   if (sx===gx && sy===gy) return [];
@@ -273,11 +305,13 @@ class Player extends Entity {
     this.voc=voc;this.vocData=v;
     this.level=1;this.xp=0;this.gold=200;
     this.inv={};this.eq={weapon:null,armor:null,helmet:null,shield:null};
+    this.spellCds={};       // id -> ticks remaining
+    this.atkBuff={val:1,ttl:0}; // multiplier + duration
     [1,8,11].forEach(id=>{this.addItem(id);this.equip(id);});
     for(let i=0;i<5;i++)this.addItem(20);
     for(let i=0;i<3;i++)this.addItem(22);
   }
-  get totalAtk(){return this.atk+(this.eq.weapon?ITEMS[this.eq.weapon].atk:0);}
+  get totalAtk(){return Math.floor((this.atk+(this.eq.weapon?ITEMS[this.eq.weapon].atk:0))*this.atkBuff.val);}
   get totalDef(){return this.def+['armor','shield','helmet'].reduce((s,sl)=>s+(this.eq[sl]?ITEMS[this.eq[sl]].def:0),0);}
   get xpNext(){return this.level*this.level*100;}
   addItem(id,n=1){
@@ -336,6 +370,7 @@ class World {
     this.chat=[];
     this.floats=[];
     this.events=[];  // {t, x, y} for particle effects
+    this.projectiles=[]; // visual only: {sx,sy,tx,ty,progress,speed,color}
     this.tick=0;
     this.regenTick=0;
     this.spawnedZones=new Set();
@@ -382,6 +417,12 @@ class World {
     this.floats=this.floats.filter(f=>f.ttl>0);
     this.monsters.forEach(m=>{if(m.flashTick>0)m.flashTick--;});
     if(p.flashTick>0)p.flashTick--;
+    // Spell cooldowns & buff
+    for(const id in p.spellCds) if(p.spellCds[id]>0) p.spellCds[id]--;
+    if(p.atkBuff.ttl>0){p.atkBuff.ttl--;if(p.atkBuff.ttl===0)p.atkBuff.val=1;}
+    // Projectiles
+    this.projectiles.forEach(pr=>{pr.progress+=pr.speed;});
+    this.projectiles=this.projectiles.filter(pr=>pr.progress<1);
   }
   _updateAI(){
     const p=this.player;
@@ -464,6 +505,110 @@ class World {
       if(p.inv[id]){const old=p.mp;p.usePotion(id);this.log(`Você usa ${ITEMS[id].n} e recupera ${p.mp-old} MP.`,'#0044CC');return;}
     }
     this.log('Sem poções de MP!','#0000FF');
+  }
+  castSpell(idx){
+    const p=this.player; if(!p.alive) return;
+    const avail=(SPELLS[p.voc]||[]).filter(s=>p.level>=s.lvl);
+    const spell=avail[idx]; if(!spell) return;
+    if((p.spellCds[spell.id]||0)>0){
+      this.log(`${spell.name} em recarga (${p.spellCds[spell.id]} ticks)!`,'#888888'); return;
+    }
+    if(p.mp<spell.mp){this.log(`MP insuficiente para ${spell.name}!`,'#4444FF'); return;}
+    p.mp-=spell.mp;
+    p.spellCds[spell.id]=spell.cd;
+    switch(spell.t){
+      case 'melee':       this._sMelee(spell);      break;
+      case 'area_melee':  this._sAreaMelee(spell);  break;
+      case 'ranged':      this._sRanged(spell);     break;
+      case 'area_ranged': this._sAreaRanged(spell); break;
+      case 'line':        this._sLine(spell);       break;
+      case 'heal':        this._sHeal(spell);       break;
+      case 'buff':        this._sBuff(spell);       break;
+      case 'all_ranged':  this._sAllRanged(spell);  break;
+    }
+  }
+  _nearestIn(range){
+    const p=this.player;
+    return this.monsters
+      .filter(m=>m.alive&&Math.max(Math.abs(m.x-p.x),Math.abs(m.y-p.y))<=range)
+      .sort((a,b)=>Math.max(Math.abs(a.x-p.x),Math.abs(a.y-p.y))-Math.max(Math.abs(b.x-p.x),Math.abs(b.y-p.y)))[0]||null;
+  }
+  _spellDmg(target,spell){
+    const p=this.player;
+    const base=Math.floor(p.totalAtk*spell.val);
+    const actual=target.damage(base);
+    this.float(`-${actual}`,target.x,target.y,spell.color);
+    this.events.push({t:'crit',x:target.x,y:target.y});
+    if(!target.alive)this.log(`Você matou ${target.name}!`,'#00FF00');
+    return actual;
+  }
+  _addProj(tx,ty,spell){
+    const p=this.player;
+    this.projectiles.push({sx:p.x,sy:p.y,tx,ty,progress:0,speed:0.18,color:spell.color});
+  }
+  _sMelee(spell){
+    const t=this._nearestIn(1);
+    if(!t){this.log('Nenhum inimigo adjacente!','#888');return;}
+    const actual=this._spellDmg(t,spell);
+    this.log(`${spell.name}: ${actual} de dano em ${t.name}!`,spell.color);
+  }
+  _sAreaMelee(spell){
+    const p=this.player;
+    const targets=this.monsters.filter(m=>m.alive&&Math.max(Math.abs(m.x-p.x),Math.abs(m.y-p.y))<=spell.range);
+    if(!targets.length){this.log('Nenhum inimigo no alcance!','#888');return;}
+    let total=0; targets.forEach(t=>{total+=this._spellDmg(t,spell);});
+    this.log(`${spell.name}: ${total} de dano total em ${targets.length} inimigo(s)!`,spell.color);
+  }
+  _sRanged(spell){
+    const t=this._nearestIn(spell.range);
+    if(!t){this.log(`Nenhum inimigo em alcance ${spell.range}!`,'#888');return;}
+    this._addProj(t.x,t.y,spell);
+    const actual=this._spellDmg(t,spell);
+    this.log(`${spell.name}: ${actual} de dano em ${t.name}!`,spell.color);
+  }
+  _sAreaRanged(spell){
+    const center=this._nearestIn(spell.range);
+    if(!center){this.log(`Nenhum inimigo em alcance ${spell.range}!`,'#888');return;}
+    this._addProj(center.x,center.y,spell);
+    const ar=spell.areaR||1;
+    const targets=this.monsters.filter(m=>m.alive&&Math.max(Math.abs(m.x-center.x),Math.abs(m.y-center.y))<=ar);
+    let total=0; targets.forEach(t=>{total+=this._spellDmg(t,spell);});
+    this.log(`${spell.name}: ${total} de dano em ${targets.length} inimigo(s)!`,spell.color);
+  }
+  _sLine(spell){
+    const p=this.player;
+    const t=this._nearestIn(spell.range);
+    if(!t){this.log('Nenhum inimigo no alcance!','#888');return;}
+    this._addProj(t.x,t.y,spell);
+    const dx=Math.sign(t.x-p.x), dy=Math.sign(t.y-p.y);
+    const targets=this.monsters.filter(m=>{
+      if(!m.alive) return false;
+      const ex=m.x-p.x, ey=m.y-p.y;
+      if(Math.max(Math.abs(ex),Math.abs(ey))>spell.range) return false;
+      return (ex*dx+ey*dy)>0 && Math.abs(ex*dy-ey*dx)<=1;
+    });
+    let total=0; targets.forEach(t2=>{total+=this._spellDmg(t2,spell);});
+    this.log(`${spell.name}: ${total} de dano em ${targets.length} inimigo(s)!`,spell.color);
+  }
+  _sHeal(spell){
+    const old=this.player.hp;
+    this.player.heal(spell.val);
+    const got=this.player.hp-old;
+    this.float(`+${got}`,this.player.x,this.player.y,spell.color);
+    this.events.push({t:'heal',x:this.player.x,y:this.player.y,color:spell.color});
+    this.log(`${spell.name}: recuperou ${got} HP!`,spell.color);
+  }
+  _sBuff(spell){
+    this.player.atkBuff={val:spell.val,ttl:spell.dur};
+    this.events.push({t:'crit',x:this.player.x,y:this.player.y});
+    this.log(`${spell.name}: ATK ×${spell.val} por ${(spell.dur/30).toFixed(0)}s!`,spell.color);
+  }
+  _sAllRanged(spell){
+    const p=this.player;
+    const targets=this.monsters.filter(m=>m.alive&&Math.max(Math.abs(m.x-p.x),Math.abs(m.y-p.y))<=spell.range);
+    if(!targets.length){this.log('Nenhum inimigo visível!','#888');return;}
+    targets.forEach(t=>{this._addProj(t.x,t.y,spell);this._spellDmg(t,spell);});
+    this.log(`${spell.name}: atingiu ${targets.length} inimigo(s)!`,spell.color);
   }
   _spawnZone(cx,cy,minD,maxD){
     const distO=Math.max(Math.abs(cx-30),Math.abs(cy-30));
@@ -1257,14 +1402,43 @@ class ParticleSystem {
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 * i / count) + Math.random() * 0.4;
       this.p.push({
-        type: 1, // magic/crit
+        type: 1,
         x: wx, y: wy,
         vx: Math.cos(angle) * (1 + Math.random() * 1.5),
         vy: Math.sin(angle) * (1 + Math.random() * 1.5) - 1,
-        life: 30 + Math.random() * 20,
-        maxLife: 50,
-        size: 2 + Math.random() * 4,
-        g: 0,
+        life: 30 + Math.random() * 20, maxLife: 50,
+        size: 2 + Math.random() * 4, g: 0, rgb: null,
+      });
+    }
+  }
+
+  spawnSpell(wx, wy, hexColor, count=12) {
+    const num = parseInt(hexColor.replace('#',''), 16);
+    const rgb = [(num>>16)&255, (num>>8)&255, num&255];
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i / count) + Math.random() * 0.5;
+      const spd = 0.8 + Math.random() * 2;
+      this.p.push({
+        type: 2,
+        x: wx, y: wy,
+        vx: Math.cos(angle) * spd,
+        vy: Math.sin(angle) * spd - 0.8,
+        life: 25 + Math.random() * 20, maxLife: 45,
+        size: 2 + Math.random() * 5, g: -0.03, rgb,
+      });
+    }
+  }
+
+  spawnHeal(wx, wy, count=10) {
+    for (let i = 0; i < count; i++) {
+      this.p.push({
+        type: 3,
+        x: wx + (Math.random()-0.5)*20,
+        y: wy + (Math.random()-0.5)*10,
+        vx: (Math.random()-0.5)*0.8,
+        vy: -(1 + Math.random() * 2),
+        life: 35 + Math.random() * 20, maxLife: 55,
+        size: 3 + Math.random() * 4, g: 0,
       });
     }
   }
@@ -1285,14 +1459,17 @@ class ParticleSystem {
       const alpha = Math.min(1, p.life / (p.maxLife * 0.5));
       const sx = p.x - camX, sy = p.y - camY;
       if (p.type === 0) {
-        // Blood: bright red → dark red
         const t = 1 - p.life / p.maxLife;
         ctx.fillStyle = `rgba(${180+Math.floor(50*t)},${Math.floor(20*(1-t))},0,${alpha})`;
-      } else {
-        // Crit/magic: blue-white sparkle
+      } else if (p.type === 1) {
         const t = 1 - p.life / p.maxLife;
-        const r = Math.floor(100 + 155 * t);
-        ctx.fillStyle = `rgba(${r},120,255,${alpha})`;
+        ctx.fillStyle = `rgba(${Math.floor(100+155*t)},120,255,${alpha})`;
+      } else if (p.type === 2 && p.rgb) {
+        const [r,g,b] = p.rgb;
+        ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+      } else if (p.type === 3) {
+        // Heal: green rising sparkles
+        ctx.fillStyle = `rgba(0,${Math.floor(180+75*p.life/p.maxLife)},80,${alpha})`;
       }
       const s = Math.max(1, p.size);
       ctx.fillRect(sx - s/2, sy - s/2, s, s);
@@ -1313,6 +1490,7 @@ class Renderer {
     this.sprites.build();
     this.particles = new ParticleSystem();
     this.mapW = 0; this.mapH = 0; this.uiW = 0; this.chatH = 0;
+    this.spellBtnRects = [];
     // Pre-built tile canvases (keyed by type + tile coord for variety)
     this._tileCache = {};
   }
@@ -1572,6 +1750,8 @@ class Renderer {
       const px = ev.x * T + T/2, py = ev.y * T + T/2;
       if (ev.t === 'blood') this.particles.spawnBlood(px, py);
       else if (ev.t === 'crit') this.particles.spawnCrit(px, py);
+      else if (ev.t === 'heal') this.particles.spawnHeal(px, py);
+      else if (ev.t === 'spell') this.particles.spawnSpell(px, py, ev.color||'#FFFFFF');
     }
     world.events = [];
     this.particles.update();
@@ -1598,6 +1778,25 @@ class Renderer {
     ctx.fillRect(psx+T/2-pnw/2-2, psy-26, pnw+4, 12);
     ctx.fillStyle = '#00FF88';
     ctx.fillText(p.name, psx+T/2-pnw/2, psy-16);
+
+    // ── PROJECTILES ──────────────────────────────────
+    for (const pr of world.projectiles) {
+      const cx = (pr.sx + (pr.tx-pr.sx)*pr.progress) * T - camX + T/2;
+      const cy = (pr.sy + (pr.ty-pr.sy)*pr.progress) * T - camY + T/2;
+      // Trail
+      ctx.globalAlpha = 0.3;
+      ctx.strokeStyle = pr.color; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(pr.sx*T-camX+T/2, pr.sy*T-camY+T/2);
+      ctx.lineTo(cx, cy);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      // Orb
+      ctx.fillStyle = pr.color;
+      ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#FFF';
+      ctx.beginPath(); ctx.arc(cx-1, cy-1, 2, 0, Math.PI*2); ctx.fill();
+    }
 
     // ── FLOATING DAMAGE TEXTS ────────────────────────
     for (const f of world.floats) {
@@ -1654,6 +1853,7 @@ class Renderer {
   }
 
   _drawUI(ctx, world, ux, uw, uh) {
+    this.spellBtnRects = [];
     const p = world.player;
     let y = 14;
     const tx = ux+8, tw = uw-16;
@@ -1718,6 +1918,50 @@ class Renderer {
         ctx.font = '8px monospace'; ctx.fillStyle = '#FFF';
         ctx.fillText(`${m.name} ${m.hp}/${m.maxHp}`, tx+2, y+9);
         y += 14;
+      }
+    }
+    // ── SPELL BAR ──
+    divider();
+    const allSpells = SPELLS[p.voc] || [];
+    const avail = allSpells.filter(s => p.level >= s.lvl);
+    if (allSpells.length) {
+      label('MAGIAS:', '#CC88FF', true);
+      this.spellBtnRects = [];
+      for (let i = 0; i < allSpells.length; i++) {
+        if (y > uh - 16) break;
+        const s = allSpells[i];
+        const locked = p.level < s.lvl;
+        const cd = p.spellCds[s.id] || 0;
+        const onCd = cd > 0;
+        // Background button
+        ctx.fillStyle = locked ? '#111' : onCd ? '#2A1A00' : '#1A0E2A';
+        ctx.fillRect(tx, y, tw, 20);
+        ctx.strokeStyle = locked ? '#333' : s.color;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(tx, y, tw, 20);
+        // Number key
+        ctx.font = 'bold 10px monospace';
+        ctx.fillStyle = locked ? '#444' : s.color;
+        ctx.fillText(`[${i+1}]`, tx+2, y+14);
+        // Name
+        ctx.fillStyle = locked ? '#555' : onCd ? '#888' : '#DDD';
+        ctx.fillText(s.name, tx+24, y+14);
+        // MP cost (right-aligned)
+        ctx.fillStyle = locked ? '#333' : '#4488FF';
+        ctx.font = '9px monospace';
+        ctx.fillText(`${s.mp}mp`, tx+tw-28, y+13);
+        // Cooldown bar
+        if (onCd) {
+          ctx.fillStyle = '#FF8800';
+          ctx.fillRect(tx, y+18, Math.floor(tw*(1-cd/s.cd)), 2);
+        }
+        // Level lock label
+        if (locked) {
+          ctx.fillStyle = '#555';
+          ctx.fillText(`Lv.${s.lvl}`, tx+tw-28, y+13);
+        }
+        if (!locked) this.spellBtnRects.push({idx:avail.indexOf(s), x:8, y, w:tw, h:20});
+        y += 23;
       }
     }
   }
@@ -1826,11 +2070,22 @@ function bindInput() {
     else if (e.key==='p'||e.key==='P') world.useHpPotion();
     else if (e.key==='m'||e.key==='M') world.useMpPotion();
     else if (e.key==='i'||e.key==='I') openInventory();
+    else if ('12345'.includes(e.key)) world.castSpell(+e.key-1);
   });
 
   const canvas = document.getElementById('gameCanvas');
   const onTap = (cx, cy) => {
     if (!world) return;
+    // Tap in UI panel — check spell buttons
+    if (cx >= renderer.mapW) {
+      const relX = cx - renderer.mapW;
+      for (const btn of renderer.spellBtnRects) {
+        if (relX >= btn.x && relX <= btn.x+btn.w && cy >= btn.y && cy <= btn.y+btn.h) {
+          world.castSpell(btn.idx); return;
+        }
+      }
+      return;
+    }
     if (cy > renderer.mapH) return;
     const camX = world.player.x*TILE - renderer.mapW/2 + TILE/2;
     const camY = world.player.y*TILE - renderer.mapH/2 + TILE/2;
