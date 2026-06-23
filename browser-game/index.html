@@ -113,6 +113,8 @@ const TILE_DEF = {
   F: ['#303030','#222222', true],
   V: ['#252020','#181010', false],
   L: ['#CC2200','#991500', false],
+  H: ['#111111','#080808', true],   // Dungeon hole entrance
+  U: ['#8B6914','#6B4F10', true],   // Stairs up (exit dungeon)
 };
 
 const ITEMS = {
@@ -259,7 +261,7 @@ class WorldMap {
       }
     }
     this._town(30,30);this._town(90,30);this._town(60,90);
-    this._dungeon(60,60);this._dungeon(35,85);
+    this._dungeonEntrance(60,60);this._dungeonEntrance(35,85);this._dungeonEntrance(100,100);
   }
   _town(cx,cy){
     const s=10,r=(a,b)=>Math.floor(Math.random()*(b-a))+a;
@@ -277,15 +279,92 @@ class WorldMap {
       this.set(bx+Math.floor(bw/2),by+bh,'S');
     }
   }
-  _dungeon(cx,cy){
-    const s=16,r=(a,b)=>Math.floor(Math.random()*(b-a))+a;
-    for(let dy=-s;dy<=s;dy++)for(let dx=-s;dx<=s;dx++)this.set(cx+dx,cy+dy,'F');
-    for(let i=0;i<7;i++){
-      let rx=cx+r(-s+4,s-4),ry=cy+r(-s+4,s-4),rw=r(4,9),rh=r(3,7);
-      for(let dy=0;dy<=rh;dy++)for(let dx=0;dx<=rw;dx++)
-        if(dx===0||dy===0||dx===rw||dy===rh)this.set(rx+dx,ry+dy,'V');
-      this.set(rx+Math.floor(rw/2),ry+rh,'F');
+  _dungeonEntrance(cx,cy){
+    // Dark atmospheric area around the entrance
+    const s=9;
+    for(let dy=-s;dy<=s;dy++)for(let dx=-s;dx<=s;dx++)
+      if(dx*dx+dy*dy<=s*s*0.85)this.set(cx+dx,cy+dy,'F');
+    // Crumbling stone walls for atmosphere
+    for(let i=0;i<8;i++){
+      const wx=cx+Math.floor(Math.cos(i*0.8)*6),wy=cy+Math.floor(Math.sin(i*0.8)*6);
+      this.set(wx,wy,'X');this.set(wx+1,wy,'X');
     }
+    // The hole (impassable walls on each side)
+    this.set(cx-1,cy,'X');this.set(cx+1,cy,'X');
+    this.set(cx,cy,'H');
+  }
+}
+
+// ═══ DUNGEON MAP ═══
+const DUNGEON_NAMES=['Cripta dos Mortos','Catacumbas das Aranhas',"Covil dos Dragões"];
+const DUNGEON_POOLS=[[3,4,5,6,5,3],[5,6,7,9,7,5],[9,10,11,10,9,11]];
+
+class DungeonMap {
+  constructor(difficulty){
+    this.data=Array.from({length:MAP_H},()=>Array(MAP_W).fill('V'));
+    this.revealed=new Uint8Array(MAP_W*MAP_H);
+    this.rooms=[];
+    this.entryX=75;this.entryY=77;
+    this.stairsX=75;this.stairsY=75;
+    this.monsterIdxs=DUNGEON_POOLS[Math.min(difficulty-1,2)];
+    this.difficulty=difficulty;
+    this._gen();
+  }
+  get(x,y){if(x<0||y<0||x>=MAP_W||y>=MAP_H)return'V';return this.data[y][x];}
+  set(x,y,t){if(x>=0&&y>=0&&x<MAP_W&&y<MAP_H)this.data[y][x]=t;}
+  passable(x,y){return TILE_DEF[this.get(x,y)]?.[2]??false;}
+  reveal(x,y,r=6){
+    for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+      if(dx*dx+dy*dy<=r*r){const ix=x+dx,iy=y+dy;if(ix>=0&&iy>=0&&ix<MAP_W&&iy<MAP_H)this.revealed[iy*MAP_W+ix]=1;}
+    }
+  }
+  _gen(){
+    const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+    const pad=20,aW=MAP_W-pad*2,aH=MAP_H-pad*2;
+    const numRm=9+this.difficulty*3,minRm=6,maxRm=13;
+    // Carve rooms
+    for(let att=0;att<400&&this.rooms.length<numRm;att++){
+      const rw=ri(minRm,maxRm),rh=ri(minRm-2,maxRm-3);
+      const rx=pad+ri(0,aW-rw-1),ry=pad+ri(0,aH-rh-1);
+      if(this.rooms.some(rm=>rx<rm.x+rm.w+3&&rx+rw+3>rm.x&&ry<rm.y+rm.h+3&&ry+rh+3>rm.y))continue;
+      this.rooms.push({x:rx,y:ry,w:rw,h:rh,cx:rx+(rw>>1),cy:ry+(rh>>1)});
+      for(let dy=0;dy<=rh;dy++)for(let dx=0;dx<=rw;dx++){
+        if(dx===0||dy===0||dx===rw||dy===rh)this.set(rx+dx,ry+dy,'X');
+        else this.set(rx+dx,ry+dy,'F');
+      }
+    }
+    if(!this.rooms.length)return;
+    // Connect rooms (MST: always link nearest unconnected)
+    const conn=new Set([0]);
+    while(conn.size<this.rooms.length){
+      let best=Infinity,bF=-1,bT=-1;
+      for(const fi of conn){
+        const a=this.rooms[fi];
+        for(let ti=0;ti<this.rooms.length;ti++){
+          if(conn.has(ti))continue;
+          const b=this.rooms[ti];
+          const dist=Math.abs(a.cx-b.cx)+Math.abs(a.cy-b.cy);
+          if(dist<best){best=dist;bF=fi;bT=ti;}
+        }
+      }
+      if(bT<0)break;
+      conn.add(bT);
+      const a=this.rooms[bF],b=this.rooms[bT];
+      // L-shaped corridor (2 wide for easier navigation)
+      if(Math.random()<.5){
+        for(let x=Math.min(a.cx,b.cx);x<=Math.max(a.cx,b.cx);x++){this.set(x,a.cy,'F');this.set(x,a.cy+1,'F');}
+        for(let y=Math.min(a.cy,b.cy);y<=Math.max(a.cy,b.cy);y++){this.set(b.cx,y,'F');this.set(b.cx+1,y,'F');}
+      }else{
+        for(let y=Math.min(a.cy,b.cy);y<=Math.max(a.cy,b.cy);y++){this.set(a.cx,y,'F');this.set(a.cx+1,y,'F');}
+        for(let x=Math.min(a.cx,b.cx);x<=Math.max(a.cx,b.cx);x++){this.set(x,b.cy,'F');this.set(x,b.cy+1,'F');}
+      }
+    }
+    // Stairs up in first room; player entry 2 tiles below stairs
+    const fr=this.rooms[0];
+    this.stairsX=fr.cx;this.stairsY=fr.cy;
+    this.set(this.stairsX,this.stairsY,'U');
+    this.entryX=fr.cx;this.entryY=Math.min(fr.y+fr.h-1,fr.cy+2);
+    this.set(this.entryX,this.entryY,'F');
   }
 }
 
@@ -387,6 +466,11 @@ class World {
     this.tick=0;
     this.regenTick=0;
     this.spawnedZones=new Set();
+    this.currentFloor=0;
+    this.dungeons={};
+    this._surfaceMap=null;this._surfaceMonsters=null;
+    this._surfacePx=30;this._surfacePy=30;
+    this._preMoveX=30;this._preMoveY=30;
     player.x=30;player.y=30;
     this._fixPos(player);
     this.map.reveal(player.x,player.y,12);
@@ -409,8 +493,10 @@ class World {
     this.tick++;this.regenTick++;
     const p=this.player;
     this.map.reveal(p.x,p.y);
-    const zk=`${Math.floor(p.x/20)}_${Math.floor(p.y/20)}`;
-    if(!this.spawnedZones.has(zk)){this.spawnedZones.add(zk);this._spawnZone(p.x,p.y,8,22);}
+    if(this.currentFloor===0){
+      const zk=`${Math.floor(p.x/20)}_${Math.floor(p.y/20)}`;
+      if(!this.spawnedZones.has(zk)){this.spawnedZones.add(zk);this._spawnZone(p.x,p.y,8,22);}
+    }
     const dead=this.monsters.filter(m=>!m.alive);
     dead.forEach(m=>{
       const drops=m.dropLoot();
@@ -624,6 +710,45 @@ class World {
     if(!targets.length){this.log('Nenhum inimigo visível!','#888');return;}
     targets.forEach(t=>{this._addProj(t.x,t.y,spell);this._spellDmg(t,spell);});
     this.log(`${spell.name}: atingiu ${targets.length} inimigo(s)!`,spell.color);
+  }
+  enterDungeon(hx,hy){
+    const key=`${hx}_${hy}`;
+    if(!this.dungeons[key]){
+      const diff=key==='60_60'?1:key==='35_85'?2:3;
+      const dmap=new DungeonMap(diff);
+      const mons=[];
+      const pool=dmap.monsterIdxs;
+      const cnt=10+diff*6;
+      for(let i=0;i<cnt;i++){
+        const mi=pool[Math.floor(Math.random()*pool.length)];
+        let mx,my,t=0;
+        do{mx=22+Math.floor(Math.random()*(MAP_W-44));my=22+Math.floor(Math.random()*(MAP_H-44));t++;}
+        while((!dmap.passable(mx,my)||dmap.get(mx,my)==='U')&&t<300);
+        if(t<300)mons.push(new Monster(mx,my,mi));
+      }
+      this.dungeons[key]={map:dmap,monsters:mons,diff};
+    }
+    this._surfaceMap=this.map;this._surfaceMonsters=this.monsters;
+    this._surfacePx=this._preMoveX;this._surfacePy=this._preMoveY;
+    const d=this.dungeons[key];
+    this.map=d.map;this.monsters=d.monsters;
+    this.player.x=d.map.entryX;this.player.y=d.map.entryY;
+    this.map.reveal(this.player.x,this.player.y,10);
+    this.currentFloor=d.diff;
+    const name=DUNGEON_NAMES[d.diff-1]||'Masmorra';
+    this.log(`Você entrou na ${name}! Cuidado!`,'#FF8800');
+  }
+  exitDungeon(){
+    this.map=this._surfaceMap;this.monsters=this._surfaceMonsters;
+    this.player.x=this._surfacePx;this.player.y=this._surfacePy;
+    this.currentFloor=0;
+    this.log('Você retornou à superfície!','#00FF88');
+  }
+  _checkTransition(){
+    const p=this.player;
+    const t=this.map.get(p.x,p.y);
+    if(t==='H'&&this.currentFloor===0)this.enterDungeon(p.x,p.y);
+    else if(t==='U'&&this.currentFloor>0)this.exitDungeon();
   }
   _spawnZone(cx,cy,minD,maxD){
     const distO=Math.max(Math.abs(cx-30),Math.abs(cy-30));
@@ -1509,6 +1634,7 @@ class Renderer {
     this._mmCanvas = null;
     this._fogCanvas = null;
     this._fogPx = -9999; this._fogPy = -9999;
+    this._lastFloor = -1;
     // Pre-built tile canvases (keyed by type + tile coord for variety)
     this._tileCache = {};
   }
@@ -1688,6 +1814,47 @@ class Renderer {
       ctx.fillRect(sx + 2, sy + Math.floor(T*0.3 + lw*3), T-4, 5);
       ctx.fillStyle = 'rgba(255,220,0,.3)';
       ctx.fillRect(sx + 6, sy + Math.floor(T*0.6 + lw*2), T-12, 3);
+
+    } else if (type === 'H') {
+      // Dungeon hole entrance
+      ctx.fillStyle = '#0C0C0C';
+      ctx.fillRect(sx, sy, T, T);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(sx+5, sy+5, T-10, T-10);
+      const pulse = (Math.sin(this.tick*0.07 + tx*0.4 + ty*0.6) + 1) * 0.5;
+      ctx.fillStyle = `rgba(80,30,0,${0.15 + pulse*0.35})`;
+      ctx.fillRect(sx+5, sy+5, T-10, T-10);
+      // Rim highlight
+      ctx.fillStyle = '#222';
+      ctx.fillRect(sx+2, sy+2, T-4, 3); ctx.fillRect(sx+2, sy+2, 3, T-4);
+      // Down arrow (pulsing)
+      ctx.font = `bold ${Math.floor(T*.44)}px monospace`;
+      ctx.fillStyle = `rgba(255,130,0,${0.5+pulse*0.45})`;
+      ctx.textAlign = 'center';
+      ctx.fillText('▼', sx+T/2, sy+T*0.72|0);
+      ctx.textAlign = 'left';
+
+    } else if (type === 'U') {
+      // Stairs up (inside dungeon)
+      ctx.fillStyle = '#1E1408';
+      ctx.fillRect(sx, sy, T, T);
+      const steps = 4;
+      for (let i = 0; i < steps; i++) {
+        const sw = T - i*5, sh = (T/steps)|0;
+        const ox = sx + (i*2.5)|0, oy = sy + i*sh;
+        ctx.fillStyle = i%2===0 ? '#7A5914' : '#50380A';
+        ctx.fillRect(ox, oy, sw, sh);
+        ctx.fillStyle = 'rgba(255,255,255,.14)';
+        ctx.fillRect(ox, oy, sw, 2);
+        ctx.fillStyle = 'rgba(0,0,0,.28)';
+        ctx.fillRect(ox, oy+sh-2, sw, 2);
+      }
+      ctx.font = `bold ${Math.floor(T*.4)}px monospace`;
+      ctx.fillStyle = '#FFD700';
+      ctx.textAlign = 'center';
+      ctx.fillText('▲', sx+T/2, sy+(T*.66)|0);
+      ctx.textAlign = 'left';
+
     } else {
       // Fallback
       ctx.fillStyle = TILE_DEF[type]?.[0] || '#333';
@@ -1732,6 +1899,12 @@ class Renderer {
 
   render(world) {
     this.tick++;
+    // Invalidate minimap cache on floor transitions
+    if (world.currentFloor !== this._lastFloor) {
+      this._lastFloor = world.currentFloor;
+      this._mmCanvas = null; this._fogCanvas = null;
+      this._fogPx = -9999; this._fogPy = -9999;
+    }
     const ctx = this.ctx;
     const p = world.player;
     const mW = this.mapW, mH = this.mapH;
@@ -1876,8 +2049,9 @@ class Renderer {
     c.width = MAP_W; c.height = MAP_H;
     const mctx = c.getContext('2d');
     mctx.imageSmoothingEnabled = false;
-    const col = {G:'#3A7A1E',D:'#8B6914',S:'#686868',W:'#1A4A7A',X:'#4A4040',
-                 M:'#6D5C5C',T:'#1B5E20',N:'#C8A850',F:'#282828',V:'#181010',L:'#CC2200'};
+    const col = {G:'#3A7A1E',D:'#8B6914',S:'#686868',W:'#1A4A7A',X:'#3A3030',
+                 M:'#6D5C5C',T:'#1B5E20',N:'#C8A850',F:'#282828',V:'#101010',L:'#CC2200',
+                 H:'#000000',U:'#C8A420'};
     for (let ty = 0; ty < MAP_H; ty++) {
       for (let tx = 0; tx < MAP_W; tx++) {
         mctx.fillStyle = col[world.map.get(tx,ty)] || '#3A7A1E';
@@ -1991,6 +2165,14 @@ class Renderer {
       y += 8;
     };
 
+    // Floor indicator
+    if (world.currentFloor > 0) {
+      const dn=DUNGEON_NAMES[world.currentFloor-1]||'Masmorra';
+      label(`⚠ ${dn}`, '#FF8800', true);
+    } else {
+      label('◆ Superfície', '#44AA44', false);
+    }
+    divider();
     label(p.name, '#FFD700', true);
     label(`${p.voc}  Lv.${p.level}`, '#C8A860', false);
     label(`Gold: ${p.gold}`, '#FFD700', false);
@@ -2207,7 +2389,11 @@ function doMove(dir) {
   const m = {up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
   const [dx,dy] = m[dir]||[0,0];
   const nx = p.x+dx, ny = p.y+dy;
-  if (world.map.passable(nx,ny)) { p.x=nx; p.y=ny; }
+  if (world.map.passable(nx,ny)) {
+    world._preMoveX=p.x; world._preMoveY=p.y;
+    p.x=nx; p.y=ny;
+    world._checkTransition();
+  }
 }
 
 function bindInput() {
