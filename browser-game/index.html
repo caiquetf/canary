@@ -25,19 +25,68 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
 #continueBtn{background:#1a0e05;border:2px solid #44AA44;color:#44FF88;padding:14px 40px;font-size:18px;font-family:inherit;font-weight:bold;cursor:pointer;border-radius:4px;margin-bottom:8px;letter-spacing:2px;width:100%;max-width:500px;display:none}
 #continueBtn:hover{background:#112211;border-color:#88FF88}
 .save-info{color:#5C9A5C;font-size:12px;text-align:center;margin-bottom:6px;width:100%;max-width:500px;display:none}
-#gameWrap{display:none;width:100vw;height:100vh;position:relative}
+/* ─── TIBIA CLIENT LAYOUT ─── */
+#gameWrap{display:none;flex-direction:column;width:100vw;height:100vh}
+#gameWrap.active{display:flex}
+#tibiaClient{display:flex;flex:1;min-height:0;overflow:hidden}
+#gameViewport{flex:1;position:relative;min-width:0;background:#000;overflow:hidden}
 #gameCanvas{display:block;position:absolute;top:0;left:0}
-#dpad{position:absolute;pointer-events:all}
-.dp{background:rgba(40,20,0,.75);border:2px solid #7A4A1A;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#E8C060;cursor:pointer;-webkit-user-select:none;font-weight:bold}
+#gameSidebar{width:190px;flex-shrink:0;background:#080400;border-left:2px solid #5C3317;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#3d1f08 #0a0500}
+#gameSidebar::-webkit-scrollbar{width:4px}
+#gameSidebar::-webkit-scrollbar-thumb{background:#3d1f08}
+.tb-panel{border:1px solid #5C3317;border-top:2px solid #8B6914;margin:3px 3px 0;background:#0a0500}
+.tb-panel:last-child{margin-bottom:3px}
+.tb-phead{background:linear-gradient(to bottom,#3d1f08,#1a0a00);padding:3px 6px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #5C3317;font-size:10px;font-weight:bold;color:#C8A860;letter-spacing:1px;text-transform:uppercase;cursor:default}
+.tb-pbody{padding:5px 6px}
+#tbFloorLabel{font-size:10px;text-align:center;padding:3px 0;background:#030200;border-bottom:1px solid #2d1500;font-weight:bold;letter-spacing:1px;flex-shrink:0}
+#tbMinimap{display:block;width:184px;height:184px;image-rendering:pixelated;border:1px solid #5C3317;margin:3px auto;flex-shrink:0}
+.tb-gold{font-size:11px;color:#FFD700;margin-bottom:5px;font-weight:bold}
+.tb-bar-wrap{margin-bottom:3px}
+.tb-bar-label{font-size:9px;color:#888;display:flex;justify-content:space-between;margin-bottom:1px}
+.tb-bar{height:9px;background:#1a0e05;border:1px solid #2d1500;overflow:hidden}
+.tb-bar-fill{height:100%}
+.tb-hp .tb-bar-fill{background:linear-gradient(to right,#660000,#CC0000)}
+.tb-mp .tb-bar-fill{background:linear-gradient(to right,#000066,#0044CC)}
+.tb-xp .tb-bar-fill{background:linear-gradient(to right,#1a4400,#44AA00)}
+.tb-stats{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:5px}
+.tb-stat{font-size:10px;color:#888}
+.tb-stat span{color:#FFD700;font-weight:bold}
+.tb-eq-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.tb-eq-slot{background:#050200;border:1px solid #2d1500;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:2px;padding:3px 2px;min-height:46px;cursor:pointer;text-align:center;overflow:hidden}
+.tb-eq-slot.has-item{border-color:#6B4F10;background:#0f0800}
+.tb-eq-slot.spacer{background:transparent;border-color:transparent;cursor:default}
+.tb-slot-icon{font-size:14px;line-height:1;margin-bottom:1px}
+.tb-slot-name{font-size:7px;color:#3d1f08;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:58px}
+.tb-eq-slot.has-item .tb-slot-name{color:#C8A860}
+.tb-battle-entry{margin-bottom:5px}
+.tb-battle-name{font-size:9px;color:#DDD;margin-bottom:2px}
+.tb-battle-bar{height:6px;background:#1a0e05;border:1px solid #2d1500;overflow:hidden;border-radius:1px}
+.tb-battle-fill{height:100%;border-radius:1px}
+/* Chat panel */
+#chatPanel{height:86px;flex-shrink:0;background:#080400;border-top:2px solid #5C3317;overflow:hidden;display:flex;flex-direction:column}
+#chatLog{flex:1;overflow-y:auto;padding:4px 8px;font-size:11px;font-family:'Courier New',monospace;scrollbar-width:thin;scrollbar-color:#3d1f08 #0a0500}
+#chatLog::-webkit-scrollbar{width:4px}
+#chatLog::-webkit-scrollbar-thumb{background:#3d1f08}
+.chat-msg{line-height:1.4;word-break:break-word}
+/* Bottom bar */
+#bottomBar{background:#0a0500;border-top:2px solid #8B6914;display:flex;align-items:center;gap:4px;padding:4px 8px;flex-shrink:0;min-height:52px}
+/* D-pad (mobile touch only) */
+#dpad{display:none;position:absolute;bottom:8px;left:8px}
+@media(pointer:coarse){#dpad{display:grid}}
+.dp{background:rgba(40,20,0,.75);border:2px solid #7A4A1A;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#E8C060;cursor:pointer;-webkit-user-select:none;font-weight:bold;width:48px;height:48px}
 .dp:active,.dp.active{background:rgba(139,105,20,.9);color:#FFD700;border-color:#FFD700}
-#actionBtns{position:absolute;display:flex;gap:6px;pointer-events:all}
-.abtn{background:rgba(40,20,0,.8);border:2px solid #7A4A1A;border-radius:8px;color:#E8D5B7;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:bold;line-height:1.2;-webkit-user-select:none}
-.abtn:active{background:rgba(139,105,20,.9);color:#FFD700}
-#spellBar{position:absolute;display:flex;align-items:center;pointer-events:all;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+/* Action buttons - Tibia desktop style */
+#actionBtns{display:flex;gap:3px;align-items:center;margin-right:8px;flex-shrink:0}
+.abtn{background:#1a0e05;border:2px solid #5C3317;color:#C8A860;padding:5px 9px;font-family:inherit;cursor:pointer;font-size:11px;font-weight:bold;border-radius:3px;white-space:nowrap;letter-spacing:.5px;transition:background .1s,border-color .1s}
+.abtn:hover{background:#3d1f08;border-color:#8B6914;color:#FFD700}
+.abtn:active{background:#5C3317;color:#FFD700}
+/* Spell bar */
+#spellBar{flex:1;display:flex;align-items:center;gap:3px;overflow-x:auto;scrollbar-width:none;padding:0 2px}
 #spellBar::-webkit-scrollbar{display:none}
-.sbtn{background:rgba(15,8,0,.9);border:2px solid #7A4A1A;border-radius:6px;color:#E8D5B7;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;-webkit-user-select:none;position:relative;overflow:hidden;flex-shrink:0;padding:0}
-.sbtn:active{background:rgba(100,70,10,.95)}
-.sbtn.locked{opacity:.32}
+.sbtn{background:#0f0800;border:2px solid #3d1f08;color:#C8A860;font-family:inherit;cursor:pointer;border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;padding:2px 4px;min-width:52px;height:42px;position:relative;overflow:hidden;transition:border-color .1s}
+.sbtn:hover{border-color:#8B6914}
+.sbtn:active{background:#1a0e05}
+.sbtn.locked{opacity:.32;cursor:default}
 .sbtn .scd-ov{position:absolute;left:0;top:0;bottom:0;background:rgba(0,0,0,.58);pointer-events:none}
 #invModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center}
 #invModal.show{display:flex}
@@ -94,22 +143,72 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
 </div>
 
 <div id="gameWrap">
-  <canvas id="gameCanvas"></canvas>
-  <div id="dpad">
-    <div></div><div class="dp" data-dir="up">▲</div><div></div>
-    <div class="dp" data-dir="left">◄</div>
-    <div class="dp" data-dir="attack" style="font-size:75%">⚔</div>
-    <div class="dp" data-dir="right">►</div>
-    <div></div><div class="dp" data-dir="down">▼</div><div></div>
+  <div id="tibiaClient">
+    <div id="gameViewport">
+      <canvas id="gameCanvas"></canvas>
+      <div id="dpad" style="grid-template-columns:48px 48px 48px;grid-template-rows:48px 48px 48px;gap:2px">
+        <div></div><div class="dp" data-dir="up">▲</div><div></div>
+        <div class="dp" data-dir="left">◄</div>
+        <div class="dp" data-dir="attack" style="font-size:75%">⚔</div>
+        <div class="dp" data-dir="right">►</div>
+        <div></div><div class="dp" data-dir="down">▼</div><div></div>
+      </div>
+    </div>
+    <div id="gameSidebar">
+      <div id="tbFloorLabel" style="color:#44AA44">◆ Superfície</div>
+      <canvas id="tbMinimap" width="184" height="184"></canvas>
+      <div class="tb-panel">
+        <div class="tb-phead">
+          <span id="tbCharName">—</span>
+          <span id="tbCharVoc" style="color:#8B8B8B">Lv.1</span>
+        </div>
+        <div class="tb-pbody">
+          <div class="tb-gold" id="tbGold">Gold: 0</div>
+          <div class="tb-bar-wrap">
+            <div class="tb-bar-label"><span>HP</span><span id="tbHpNum">—</span></div>
+            <div class="tb-bar tb-hp"><div class="tb-bar-fill" id="tbHpFill" style="width:100%"></div></div>
+          </div>
+          <div class="tb-bar-wrap">
+            <div class="tb-bar-label"><span>MP</span><span id="tbMpNum">—</span></div>
+            <div class="tb-bar tb-mp"><div class="tb-bar-fill" id="tbMpFill" style="width:0%"></div></div>
+          </div>
+          <div class="tb-bar-wrap">
+            <div class="tb-bar-label"><span>XP</span><span id="tbXpNum">—</span></div>
+            <div class="tb-bar tb-xp"><div class="tb-bar-fill" id="tbXpFill" style="width:0%"></div></div>
+          </div>
+          <div class="tb-stats">
+            <div class="tb-stat">ATK <span id="tbAtk">—</span></div>
+            <div class="tb-stat">DEF <span id="tbDef">—</span></div>
+            <div class="tb-stat">HP Pot <span id="tbHpPots">0</span></div>
+            <div class="tb-stat">MP Pot <span id="tbMpPots">0</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="tb-panel">
+        <div class="tb-phead">Equipamento</div>
+        <div class="tb-pbody">
+          <div class="tb-eq-grid" id="tbEqGrid"></div>
+        </div>
+      </div>
+      <div class="tb-panel">
+        <div class="tb-phead">Battle</div>
+        <div class="tb-pbody" id="tbBattle"><span style="font-size:9px;color:#444">Sem inimigos próximos</span></div>
+      </div>
+    </div>
   </div>
-  <div id="actionBtns">
-    <button class="abtn" id="btnHp">❤<br>HP</button>
-    <button class="abtn" id="btnMp">✦<br>MP</button>
-    <button class="abtn" id="btnInv">🎒<br>INV</button>
-    <button class="abtn" id="btnSave">💾<br>SAL</button>
-    <button class="abtn" id="btnMute">🔊<br>SOM</button>
+  <div id="chatPanel">
+    <div id="chatLog"></div>
   </div>
-  <div id="spellBar"></div>
+  <div id="bottomBar">
+    <div id="actionBtns">
+      <button class="abtn" id="btnHp">❤ HP</button>
+      <button class="abtn" id="btnMp">✦ MP</button>
+      <button class="abtn" id="btnInv">🎒 INV</button>
+      <button class="abtn" id="btnSave">💾 SAL</button>
+      <button class="abtn" id="btnMute">🔊 SOM</button>
+    </div>
+    <div id="spellBar"></div>
+  </div>
 </div>
 
 <div id="shopModal">
@@ -2061,22 +2160,51 @@ class Renderer {
     this.sprites = new SpriteCache();
     this.sprites.build();
     this.particles = new ParticleSystem();
-    this.mapW = 0; this.mapH = 0; this.uiW = 0; this.chatH = 0;
-    this.spellBtnRects = [];
+    this.mapW = 0; this.mapH = 0;
     this._mmCanvas = null;
     this._fogCanvas = null;
     this._fogPx = -9999; this._fogPy = -9999;
     this._lastFloor = -1;
-    // Pre-built tile canvases (keyed by type + tile coord for variety)
     this._tileCache = {};
   }
 
-  resize(mapW, uiW, chatH) {
-    this.mapW = mapW; this.uiW = uiW; this.chatH = chatH;
-    this.canvas.width = mapW + uiW;
-    this.canvas.height = window.innerHeight;
-    this.mapH = window.innerHeight - chatH;
+  resize(mapW, mapH) {
+    this.mapW = mapW; this.mapH = mapH;
+    this.canvas.width = mapW;
+    this.canvas.height = mapH;
     this.ctx.imageSmoothingEnabled = false;
+  }
+
+  renderMinimap(world) {
+    const el = document.getElementById('tbMinimap');
+    if (!el || !world) return;
+    if (!this._mmCanvas) this._buildMinimap(world);
+    this._updateFog(world);
+    const cw = el.width, ch = el.height;
+    const ctx = el.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(this._mmCanvas, 0, 0, cw, ch);
+    ctx.globalAlpha = 0.78;
+    ctx.drawImage(this._fogCanvas, 0, 0, cw, ch);
+    ctx.globalAlpha = 1;
+    const p = world.player;
+    const scale = cw / MAP_W;
+    const vx = (p.x - this.mapW/(2*TILE)) * scale;
+    const vy = (p.y - this.mapH/(2*TILE)) * scale;
+    const vw = (this.mapW / TILE) * scale;
+    const vh = (this.mapH / TILE) * scale;
+    ctx.strokeStyle = 'rgba(255,240,160,0.4)'; ctx.lineWidth = 1;
+    ctx.strokeRect(vx, vy, vw, vh);
+    const rev = world.map.revealed;
+    ctx.fillStyle = '#FF3300';
+    for (const m of world.monsters) {
+      if (!m.alive || !rev[m.y*MAP_W+m.x]) continue;
+      ctx.fillRect(Math.round(m.x*scale)-1, Math.round(m.y*scale)-1, 2, 2);
+    }
+    ctx.fillStyle = '#00FF88';
+    ctx.fillRect(Math.round(p.x*scale)-2, Math.round(p.y*scale)-2, 4, 4);
+    ctx.fillStyle = '#FFF';
+    ctx.fillRect(Math.round(p.x*scale)-1, Math.round(p.y*scale)-1, 2, 2);
   }
 
   // ── Tile drawing (improved Tibia-style) ──
@@ -2340,9 +2468,6 @@ class Renderer {
     const ctx = this.ctx;
     const p = world.player;
     const mW = this.mapW, mH = this.mapH;
-    const uiX = mW, uiW = this.uiW;
-    const cH = this.chatH;
-    const W = mW + uiW, H = mH + cH;
     const T = TILE;
 
     // Camera (centered on animated player position)
@@ -2459,29 +2584,10 @@ class Renderer {
 
     ctx.restore();
 
-    // ── MAP BORDER ───────────────────────────────────
-    ctx.strokeStyle = '#5C3317'; ctx.lineWidth = 2;
-    ctx.strokeRect(0, 0, mW, mH);
-
-    // ── UI PANEL ─────────────────────────────────────
-    ctx.fillStyle = '#0C0700';
-    ctx.fillRect(uiX, 0, uiW, mH);
-    ctx.strokeStyle = '#6B4010'; ctx.lineWidth = 2;
-    ctx.strokeRect(uiX, 0, uiW, mH);
-    const mmBottom = this._drawMinimap(ctx, world, uiX, uiW);
-    this._drawUI(ctx, world, uiX, uiW, mH, mmBottom);
-
-    // ── CHAT BOX ─────────────────────────────────────
-    ctx.fillStyle = '#080400';
-    ctx.fillRect(0, mH, W, cH);
-    ctx.strokeStyle = '#5C3317'; ctx.lineWidth = 1;
-    ctx.strokeRect(0, mH, W, cH);
-    this._drawChat(ctx, world, mH, W, cH);
-
-    // ── DEATH TINT (modal handles interaction) ───────
+    // ── DEATH TINT ───────────────────────────────────
     if (!p.alive) {
       ctx.fillStyle = 'rgba(80,0,0,.35)';
-      ctx.fillRect(0, 0, W, H);
+      ctx.fillRect(0, 0, mW, mH);
     }
   }
 
@@ -2713,42 +2819,150 @@ class Renderer {
 }
 
 // ═══════════════════════════════════════════════════════
+//  HTML UI UPDATE
+// ═══════════════════════════════════════════════════════
+function _e(id){return document.getElementById(id)}
+function _etxt(id,v){const el=_e(id);if(el)el.textContent=v}
+function _estyle(id,prop,v){const el=_e(id);if(el)el.style[prop]=v}
+
+const EQ_LAYOUT=[
+  {slot:'helmet',icon:'⛑',label:'Helm'},
+  null,
+  {slot:'amulet',icon:'📿',label:'Amu'},
+  {slot:'weapon',icon:'⚔',label:'Weap'},
+  {slot:'armor', icon:'🛡',label:'Arm'},
+  {slot:'shield',icon:'🔰',label:'Shld'},
+  {slot:'ring',  icon:'💍',label:'Ring'},
+  {slot:'legs',  icon:'🩲',label:'Legs'},
+  null,
+  null,
+  {slot:'boots', icon:'👟',label:'Boot'},
+  null,
+];
+let _eqBuilt=false;
+function _buildEqGrid(){
+  const grid=_e('tbEqGrid'); if(!grid)return;
+  grid.innerHTML='';
+  EQ_LAYOUT.forEach(s=>{
+    const div=document.createElement('div');
+    if(!s){div.className='tb-eq-slot spacer';}
+    else{
+      div.className='tb-eq-slot';
+      div.dataset.slot=s.slot;
+      div.innerHTML=`<span class="tb-slot-icon">${s.icon}</span><span class="tb-slot-name">${s.label}</span>`;
+    }
+    grid.appendChild(div);
+  });
+  _eqBuilt=true;
+}
+function _updateEqGrid(p){
+  if(!_eqBuilt)_buildEqGrid();
+  const grid=_e('tbEqGrid'); if(!grid)return;
+  const cells=grid.children;
+  EQ_LAYOUT.forEach((s,i)=>{
+    if(!s)return;
+    const div=cells[i]; if(!div)return;
+    const itemId=p.eq[s.slot];
+    const item=itemId?ITEMS[itemId]:null;
+    div.className='tb-eq-slot'+(item?' has-item':'');
+    if(item){
+      div.innerHTML=`<span class="tb-slot-icon">${s.icon}</span><span class="tb-slot-name">${item.n}</span>`;
+    } else {
+      div.innerHTML=`<span class="tb-slot-icon" style="opacity:.25">${s.icon}</span><span class="tb-slot-name">${s.label}</span>`;
+    }
+  });
+}
+function _updateBattle(world){
+  const el=_e('tbBattle'); if(!el)return;
+  const p=world.player;
+  const nearby=world.monsters
+    .filter(m=>m.alive&&Math.max(Math.abs(m.x-p.x),Math.abs(m.y-p.y))<=8)
+    .sort((a,b)=>Math.max(Math.abs(a.x-p.x),Math.abs(a.y-p.y))-Math.max(Math.abs(b.x-p.x),Math.abs(b.y-p.y)))
+    .slice(0,6);
+  if(!nearby.length){el.innerHTML='<span style="font-size:9px;color:#444">Sem inimigos próximos</span>';return;}
+  let html='';
+  for(const m of nearby){
+    const hpPct=Math.max(0,m.hp/m.maxHp*100);
+    const col=hpPct>60?'#008800':hpPct>30?'#888800':'#880000';
+    html+=`<div class="tb-battle-entry"><div class="tb-battle-name">${m.name} <span style="color:#555;font-size:8px">${m.hp}/${m.maxHp}</span></div><div class="tb-battle-bar"><div class="tb-battle-fill" style="width:${hpPct}%;background:${col}"></div></div></div>`;
+  }
+  el.innerHTML=html;
+}
+let _chatLen=0;
+function _syncChat(world){
+  const log=_e('chatLog'); if(!log)return;
+  let appended=false;
+  while(_chatLen<world.chat.length){
+    const m=world.chat[_chatLen++];
+    const div=document.createElement('div');
+    div.className='chat-msg';
+    div.style.color=m.color;
+    div.textContent=m.msg;
+    log.appendChild(div);
+    if(log.children.length>150)log.removeChild(log.firstChild);
+    appended=true;
+  }
+  if(appended)log.scrollTop=log.scrollHeight;
+}
+function updateHtmlUI(world){
+  if(!world)return;
+  const p=world.player;
+  // Floor label
+  const fl=_e('tbFloorLabel');
+  if(fl){
+    if(world.currentFloor>0){
+      fl.textContent=`⚠ ${DUNGEON_NAMES[world.currentFloor-1]||'Masmorra'}`;
+      fl.style.color='#FF8800';
+    } else {
+      fl.textContent='◆ Superfície';
+      fl.style.color='#44AA44';
+    }
+  }
+  // Character
+  _etxt('tbCharName',p.name);
+  _etxt('tbCharVoc',`${p.voc} Lv.${p.level}`);
+  _etxt('tbGold',`Gold: ${p.gold}`);
+  // HP bar
+  const hpPct=Math.max(0,p.hp/p.maxHp*100);
+  _estyle('tbHpFill','width',hpPct+'%');
+  const hpEl=_e('tbHpFill');
+  if(hpEl){hpEl.style.background=hpPct>60?'linear-gradient(to right,#004400,#008800)':hpPct>30?'linear-gradient(to right,#444400,#888800)':'linear-gradient(to right,#660000,#CC0000)';}
+  _etxt('tbHpNum',`${p.hp}/${p.maxHp}`);
+  // MP bar
+  const mpPct=p.maxMp>0?Math.max(0,p.mp/p.maxMp*100):0;
+  _estyle('tbMpFill','width',mpPct+'%');
+  _etxt('tbMpNum',`${p.mp}/${p.maxMp}`);
+  // XP bar
+  const xpPct=p.xpNext>0?Math.max(0,p.xp/p.xpNext*100):0;
+  _estyle('tbXpFill','width',xpPct+'%');
+  _etxt('tbXpNum',`${p.xp}/${p.xpNext}`);
+  // Stats
+  _etxt('tbAtk',p.totalAtk);
+  _etxt('tbDef',p.totalDef);
+  const hpPots=Object.entries(p.inv).filter(([id])=>ITEMS[id]?.t==='potion'&&ITEMS[id]?.hp>0).reduce((s,[,c])=>s+c,0);
+  const mpPots=Object.entries(p.inv).filter(([id])=>ITEMS[id]?.t==='potion'&&ITEMS[id]?.mp>0).reduce((s,[,c])=>s+c,0);
+  _etxt('tbHpPots',hpPots);
+  _etxt('tbMpPots',mpPots);
+  // Equipment, battle, chat
+  _updateEqGrid(p);
+  _updateBattle(world);
+  _syncChat(world);
+}
+
+// ═══════════════════════════════════════════════════════
 //  GAME LOOP & INPUT
 // ═══════════════════════════════════════════════════════
 let world, renderer, running = false;
 let heldDir = null, heldInterval = null;
 
 function setupLayout() {
-  const W = window.innerWidth, H = window.innerHeight;
-  const chatH = Math.max(60, Math.min(100, H*.18));
-  const uiW   = Math.max(160, Math.min(240, W*.28));
-  TILE = Math.max(24, Math.min(40, Math.floor((H-chatH)/13)));
-  const mapW = W - uiW;
-  renderer.resize(mapW, uiW, chatH);
-
-  const btnSz = Math.max(44, Math.min(60, W*.07));
-  const dpad = document.getElementById('dpad');
-  dpad.style.cssText = `position:absolute;bottom:${chatH+6}px;left:6px;display:grid;grid-template-columns:${btnSz}px ${btnSz}px ${btnSz}px;grid-template-rows:${btnSz}px ${btnSz}px ${btnSz}px;gap:3px;pointer-events:all`;
-  document.querySelectorAll('.dp').forEach(d => {
-    d.style.width  = btnSz+'px';
-    d.style.height = btnSz+'px';
-    d.style.fontSize = Math.floor(btnSz*.42)+'px';
-  });
-
-  const abW = Math.floor(btnSz*1.1), abH = Math.floor(btnSz*.9);
-  const ab = document.getElementById('actionBtns');
-  ab.style.cssText = `position:absolute;bottom:${chatH+6}px;left:${btnSz*3+18}px;display:flex;gap:6px;pointer-events:all`;
-  document.querySelectorAll('.abtn').forEach(b => {
-    b.style.width  = abW+'px';
-    b.style.height = abH+'px';
-    b.style.fontSize = Math.floor(abW*.22)+'px';
-  });
-
-  // Spell bar — full-width strip above the d-pad row
-  const dpadH = btnSz * 3 + 6;
-  const sbH = Math.max(52, Math.round(btnSz * .9));
-  const sb = document.getElementById('spellBar');
-  sb.style.cssText = `position:absolute;bottom:${chatH+6+dpadH+5}px;left:0;right:0;height:${sbH}px;padding:0 5px;gap:4px;display:flex;align-items:center;pointer-events:all;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none`;
+  const vp = document.getElementById('gameViewport');
+  const sidebarW = 190, chatH = 86, bottomH = 52;
+  const vpW = Math.max(200, window.innerWidth - sidebarW);
+  const vpH = Math.max(200, window.innerHeight - chatH - bottomH);
+  TILE = Math.max(24, Math.min(40, Math.floor(vpH / 14)));
+  renderer.resize(vpW, vpH);
+  if (vp) { vp.style.width = vpW+'px'; vp.style.height = vpH+'px'; }
   if (world) updateSpellBar(true);
 }
 
@@ -2764,11 +2978,6 @@ function updateSpellBar(force) {
   if (force || p.voc !== _sbVoc || p.level !== _sbLvl) {
     _sbVoc = p.voc; _sbLvl = p.level;
     bar.innerHTML = '';
-    const W = window.innerWidth;
-    const btnSz = Math.max(44, Math.min(60, W * .07));
-    const sbH = Math.max(52, Math.round(btnSz * .9));
-    const n = allSpells.length || 1;
-    const sbW = Math.max(56, Math.floor((W - 10 - 4 * (n - 1)) / n));
     allSpells.forEach(spell => {
       const locked = p.level < spell.lvl;
       const idx = avail.indexOf(spell);
@@ -2776,18 +2985,18 @@ function updateSpellBar(force) {
       btn.className = 'sbtn' + (locked ? ' locked' : '');
       btn.dataset.sid = spell.id;
       btn.dataset.scd = spell.cd;
-      btn.style.cssText = `width:${sbW}px;height:${sbH}px;min-width:${sbW}px;border-color:${spell.color}`;
+      btn.style.borderColor = spell.color;
       const ws = spell.name.split(/\s+/);
       const abbr = ws.length > 1
         ? ws.map(w => (w.replace(/[^a-z]/gi,'') || 'X')[0].toUpperCase()).join('').slice(0, 4)
         : spell.name.replace(/[^a-z]/gi,'').slice(0, 4).toUpperCase();
-      const fs1 = Math.max(11, Math.floor(sbH * .22));
-      const fs2 = Math.max(9,  Math.floor(sbH * .17));
+      const num = allSpells.indexOf(spell) + 1;
       btn.innerHTML =
-        `<span style="font-size:${fs1}px;font-weight:bold;color:${locked?'#777':spell.color}">${abbr}</span>`+
-        `<span style="font-size:${fs2}px;color:${locked?'#555':'#8899CC'}">${spell.mp}mp</span>`+
-        (locked ? `<span style="font-size:${Math.max(8,fs2-1)}px;color:#555">Lv${spell.lvl}</span>` : '')+
+        `<span style="font-size:11px;font-weight:bold;color:${locked?'#777':spell.color}">${abbr}</span>`+
+        `<span style="font-size:9px;color:${locked?'#555':'#8899CC'}">${spell.mp}mp</span>`+
+        (locked ? `<span style="font-size:8px;color:#555">Lv${spell.lvl}</span>` : `<span style="font-size:8px;color:#554422">[${num}]</span>`)+
         `<span class="scd-ov" style="width:0%"></span>`;
+      btn.title = `${spell.name} (${spell.mp}mp)${locked?' — Nível '+spell.lvl+' necessário':''}`;
       if (!locked) {
         const cast = () => { if (world) world.castSpell(idx); };
         btn.addEventListener('touchstart', e => { e.preventDefault(); cast(); }, {passive:false});
@@ -2894,7 +3103,8 @@ function _checkSaveOnSelect() {
 
 function startGame(name, voc) {
   document.getElementById('charSelect').style.display = 'none';
-  document.getElementById('gameWrap').style.display   = 'block';
+  document.getElementById('gameWrap').classList.add('active');
+  _chatLen = 0; _eqBuilt = false;
   const canvas = document.getElementById('gameCanvas');
   renderer = new Renderer(canvas);
   const player = new Player(30, 30, name||'Herói', voc||'Knight');
@@ -2919,6 +3129,8 @@ function loop() {
   if (Math.abs(_p.px - _tx) < 0.8) _p.px = _tx;
   if (Math.abs(_p.py - _ty) < 0.8) _p.py = _ty;
   renderer.render(world);
+  renderer.renderMinimap(world);
+  updateHtmlUI(world);
   updateSpellBar();
   setTimeout(loop, 33);
 }
@@ -2963,7 +3175,7 @@ function bindInput() {
   document.getElementById('btnSave').addEventListener('click', saveGame);
   document.getElementById('btnMute').addEventListener('click', ()=>{
     const muted = sfx.toggleMute();
-    document.getElementById('btnMute').innerHTML = `${muted?'🔇':'🔊'}<br>SOM`;
+    document.getElementById('btnMute').textContent = muted?'🔇 SOM':'🔊 SOM';
   });
 
   const keyMap = {ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
@@ -2981,17 +3193,7 @@ function bindInput() {
   const canvas = document.getElementById('gameCanvas');
   const onTap = (cx, cy) => {
     if (!world) return;
-    // Tap in UI panel — check spell buttons
-    if (cx >= renderer.mapW) {
-      const relX = cx - renderer.mapW;
-      for (const btn of renderer.spellBtnRects) {
-        if (relX >= btn.x && relX <= btn.x+btn.w && cy >= btn.y && cy <= btn.y+btn.h) {
-          world.castSpell(btn.idx); return;
-        }
-      }
-      return;
-    }
-    if (cy > renderer.mapH) return;
+    if (cx > renderer.mapW || cy > renderer.mapH) return;
     const camX = world.player.px - renderer.mapW/2;
     const camY = world.player.py - renderer.mapH/2;
     const wx = Math.floor((cx+camX)/TILE);
