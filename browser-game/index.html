@@ -1062,6 +1062,7 @@ class World {
     p.atkBuff={val:1,ttl:0};
     p.x=town.x;p.y=town.y;
     this._fixPos(p);
+    p.px=p.x*TILE+TILE/2;p.py=p.y*TILE+TILE/2;
     this.map.reveal(p.x,p.y,10);
     this._deathShown=false;
     document.getElementById('deathModal').classList.remove('show');
@@ -1160,6 +1161,7 @@ class World {
     const d=this.dungeons[key];
     this.map=d.map;this.monsters=d.monsters;
     this.player.x=d.map.entryX;this.player.y=d.map.entryY;
+    this.player.px=this.player.x*TILE+TILE/2;this.player.py=this.player.y*TILE+TILE/2;
     this.map.reveal(this.player.x,this.player.y,10);
     this.currentFloor=d.diff;
     const name=DUNGEON_NAMES[d.diff-1]||'Masmorra';
@@ -1169,6 +1171,7 @@ class World {
   exitDungeon(){
     this.map=this._surfaceMap;this.monsters=this._surfaceMonsters;
     this.player.x=this._surfacePx;this.player.y=this._surfacePy;
+    this.player.px=this.player.x*TILE+TILE/2;this.player.py=this.player.y*TILE+TILE/2;
     this.currentFloor=0;
     sfx.dungeonExit();
     this.log('Você retornou à superfície!','#00FF88');
