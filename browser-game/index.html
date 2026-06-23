@@ -30,6 +30,12 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
 #actionBtns{position:absolute;display:flex;gap:6px;pointer-events:all}
 .abtn{background:rgba(40,20,0,.8);border:2px solid #7A4A1A;border-radius:8px;color:#E8D5B7;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:bold;line-height:1.2;-webkit-user-select:none}
 .abtn:active{background:rgba(139,105,20,.9);color:#FFD700}
+#spellBar{position:absolute;display:flex;align-items:center;pointer-events:all;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#spellBar::-webkit-scrollbar{display:none}
+.sbtn{background:rgba(15,8,0,.9);border:2px solid #7A4A1A;border-radius:6px;color:#E8D5B7;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;-webkit-user-select:none;position:relative;overflow:hidden;flex-shrink:0;padding:0}
+.sbtn:active{background:rgba(100,70,10,.95)}
+.sbtn.locked{opacity:.32}
+.sbtn .scd-ov{position:absolute;left:0;top:0;bottom:0;background:rgba(0,0,0,.58);pointer-events:none}
 #invModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center}
 #invModal.show{display:flex}
 #invBox{background:#1a0e05;border:3px solid #8B6914;padding:16px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;border-radius:4px;color:#E8D5B7}
@@ -71,6 +77,7 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
     <button class="abtn" id="btnMp">✦<br>MP</button>
     <button class="abtn" id="btnInv">🎒<br>INV</button>
   </div>
+  <div id="spellBar"></div>
 </div>
 
 <div id="invModal">
@@ -2007,6 +2014,66 @@ function setupLayout() {
     b.style.height = abH+'px';
     b.style.fontSize = Math.floor(abW*.22)+'px';
   });
+
+  // Spell bar — full-width strip above the d-pad row
+  const dpadH = btnSz * 3 + 6;
+  const sbH = Math.max(52, Math.round(btnSz * .9));
+  const sb = document.getElementById('spellBar');
+  sb.style.cssText = `position:absolute;bottom:${chatH+6+dpadH+5}px;left:0;right:0;height:${sbH}px;padding:0 5px;gap:4px;display:flex;align-items:center;pointer-events:all;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none`;
+  if (world) updateSpellBar(true);
+}
+
+let _sbVoc = null, _sbLvl = -1;
+function updateSpellBar(force) {
+  if (!world) return;
+  const p = world.player;
+  const allSpells = SPELLS[p.voc] || [];
+  const avail = allSpells.filter(s => p.level >= s.lvl);
+  const bar = document.getElementById('spellBar');
+  if (!bar) return;
+
+  if (force || p.voc !== _sbVoc || p.level !== _sbLvl) {
+    _sbVoc = p.voc; _sbLvl = p.level;
+    bar.innerHTML = '';
+    const W = window.innerWidth;
+    const btnSz = Math.max(44, Math.min(60, W * .07));
+    const sbH = Math.max(52, Math.round(btnSz * .9));
+    const n = allSpells.length || 1;
+    const sbW = Math.max(56, Math.floor((W - 10 - 4 * (n - 1)) / n));
+    allSpells.forEach(spell => {
+      const locked = p.level < spell.lvl;
+      const idx = avail.indexOf(spell);
+      const btn = document.createElement('button');
+      btn.className = 'sbtn' + (locked ? ' locked' : '');
+      btn.dataset.sid = spell.id;
+      btn.dataset.scd = spell.cd;
+      btn.style.cssText = `width:${sbW}px;height:${sbH}px;min-width:${sbW}px;border-color:${spell.color}`;
+      const ws = spell.name.split(/\s+/);
+      const abbr = ws.length > 1
+        ? ws.map(w => (w.replace(/[^a-z]/gi,'') || 'X')[0].toUpperCase()).join('').slice(0, 4)
+        : spell.name.replace(/[^a-z]/gi,'').slice(0, 4).toUpperCase();
+      const fs1 = Math.max(11, Math.floor(sbH * .22));
+      const fs2 = Math.max(9,  Math.floor(sbH * .17));
+      btn.innerHTML =
+        `<span style="font-size:${fs1}px;font-weight:bold;color:${locked?'#777':spell.color}">${abbr}</span>`+
+        `<span style="font-size:${fs2}px;color:${locked?'#555':'#8899CC'}">${spell.mp}mp</span>`+
+        (locked ? `<span style="font-size:${Math.max(8,fs2-1)}px;color:#555">Lv${spell.lvl}</span>` : '')+
+        `<span class="scd-ov" style="width:0%"></span>`;
+      if (!locked) {
+        const cast = () => { if (world) world.castSpell(idx); };
+        btn.addEventListener('touchstart', e => { e.preventDefault(); cast(); }, {passive:false});
+        btn.addEventListener('click', cast);
+      }
+      bar.appendChild(btn);
+    });
+  }
+
+  // Update cooldown overlays every frame
+  bar.querySelectorAll('.sbtn:not(.locked)').forEach(btn => {
+    const cd = world.player.spellCds[btn.dataset.sid] || 0;
+    const ov = btn.querySelector('.scd-ov');
+    if (ov) ov.style.width = (cd > 0 ? Math.round(cd / btn.dataset.scd * 100) : 0) + '%';
+  });
 }
 
 function startGame(name, voc) {
@@ -2026,6 +2093,7 @@ function loop() {
   if (!running) return;
   world.update();
   renderer.render(world);
+  updateSpellBar();
   setTimeout(loop, 33);
 }
 
