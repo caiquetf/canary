@@ -229,6 +229,12 @@ class WorldMap {
   get(x,y){if(x<0||y<0||x>=MAP_W||y>=MAP_H)return 'M';return this.data[y][x];}
   set(x,y,t){if(x>0&&y>0&&x<MAP_W-1&&y<MAP_H-1)this.data[y][x]=t;}
   passable(x,y){return TILE_DEF[this.get(x,y)]?.[2]??false;}
+  revealed=new Uint8Array(MAP_W*MAP_H);
+  reveal(x,y,r=6){
+    for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+      if(dx*dx+dy*dy<=r*r){const ix=x+dx,iy=y+dy;if(ix>=0&&iy>=0&&ix<MAP_W&&iy<MAP_H)this.revealed[iy*MAP_W+ix]=1;}
+    }
+  }
   _gen(){
     const r=(a,b)=>Math.floor(Math.random()*(b-a))+a;
     for(let x=0;x<MAP_W;x++){this.set(x,0,'M');this.set(x,MAP_H-1,'M');}
@@ -383,6 +389,7 @@ class World {
     this.spawnedZones=new Set();
     player.x=30;player.y=30;
     this._fixPos(player);
+    this.map.reveal(player.x,player.y,12);
     this._spawnZone(player.x,player.y,8,20);
     this.log('Bem-vindo! Mova com o D-pad. Toque em monstros para atacar.','#FFD700');
   }
@@ -401,6 +408,7 @@ class World {
   update(){
     this.tick++;this.regenTick++;
     const p=this.player;
+    this.map.reveal(p.x,p.y);
     const zk=`${Math.floor(p.x/20)}_${Math.floor(p.y/20)}`;
     if(!this.spawnedZones.has(zk)){this.spawnedZones.add(zk);this._spawnZone(p.x,p.y,8,22);}
     const dead=this.monsters.filter(m=>!m.alive);
@@ -1498,6 +1506,9 @@ class Renderer {
     this.particles = new ParticleSystem();
     this.mapW = 0; this.mapH = 0; this.uiW = 0; this.chatH = 0;
     this.spellBtnRects = [];
+    this._mmCanvas = null;
+    this._fogCanvas = null;
+    this._fogPx = -9999; this._fogPy = -9999;
     // Pre-built tile canvases (keyed by type + tile coord for variety)
     this._tileCache = {};
   }
@@ -1832,7 +1843,8 @@ class Renderer {
     ctx.fillRect(uiX, 0, uiW, mH);
     ctx.strokeStyle = '#6B4010'; ctx.lineWidth = 2;
     ctx.strokeRect(uiX, 0, uiW, mH);
-    this._drawUI(ctx, world, uiX, uiW, mH);
+    const mmBottom = this._drawMinimap(ctx, world, uiX, uiW);
+    this._drawUI(ctx, world, uiX, uiW, mH, mmBottom);
 
     // ── CHAT BOX ─────────────────────────────────────
     ctx.fillStyle = '#080400';
@@ -1859,10 +1871,103 @@ class Renderer {
     }
   }
 
-  _drawUI(ctx, world, ux, uw, uh) {
+  _buildMinimap(world) {
+    const c = document.createElement('canvas');
+    c.width = MAP_W; c.height = MAP_H;
+    const mctx = c.getContext('2d');
+    mctx.imageSmoothingEnabled = false;
+    const col = {G:'#3A7A1E',D:'#8B6914',S:'#686868',W:'#1A4A7A',X:'#4A4040',
+                 M:'#6D5C5C',T:'#1B5E20',N:'#C8A850',F:'#282828',V:'#181010',L:'#CC2200'};
+    for (let ty = 0; ty < MAP_H; ty++) {
+      for (let tx = 0; tx < MAP_W; tx++) {
+        mctx.fillStyle = col[world.map.get(tx,ty)] || '#3A7A1E';
+        mctx.fillRect(tx, ty, 1, 1);
+      }
+    }
+    this._mmCanvas = c;
+    const f = document.createElement('canvas');
+    f.width = MAP_W; f.height = MAP_H;
+    const fctx = f.getContext('2d');
+    fctx.fillStyle = '#000';
+    fctx.fillRect(0, 0, MAP_W, MAP_H);
+    this._fogCanvas = f;
+  }
+
+  _updateFog(world) {
+    const p = world.player;
+    if (p.x === this._fogPx && p.y === this._fogPy) return;
+    this._fogPx = p.x; this._fogPy = p.y;
+    const fctx = this._fogCanvas.getContext('2d');
+    fctx.globalCompositeOperation = 'destination-out';
+    fctx.fillStyle = '#000';
+    const rev = world.map.revealed;
+    const R = 7;
+    for (let dy = -R; dy <= R; dy++) {
+      for (let dx = -R; dx <= R; dx++) {
+        const ix = p.x+dx, iy = p.y+dy;
+        if (ix>=0&&iy>=0&&ix<MAP_W&&iy<MAP_H && rev[iy*MAP_W+ix]) {
+          fctx.fillRect(ix, iy, 1, 1);
+        }
+      }
+    }
+    fctx.globalCompositeOperation = 'source-over';
+  }
+
+  _drawMinimap(ctx, world, ux, uiW) {
+    const pad = 6;
+    const mmSz = uiW - pad * 2;
+    const mx = ux + pad, my = 10;
+    const scale = mmSz / MAP_W;
+    if (!this._mmCanvas) this._buildMinimap(world);
+    this._updateFog(world);
+    // Tile bitmap
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(this._mmCanvas, mx, my, mmSz, mmSz);
+    // Fog overlay
+    ctx.globalAlpha = 0.80;
+    ctx.drawImage(this._fogCanvas, mx, my, mmSz, mmSz);
+    ctx.globalAlpha = 1;
+    // Viewport rectangle
+    const p = world.player;
+    const vx = mx + (p.x - this.mapW/(2*TILE)) * scale;
+    const vy = my + (p.y - this.mapH/(2*TILE)) * scale;
+    const vw = (this.mapW / TILE) * scale;
+    const vh = (this.mapH / TILE) * scale;
+    ctx.strokeStyle = 'rgba(255,240,160,0.4)'; ctx.lineWidth = 1;
+    ctx.strokeRect(vx, vy, vw, vh);
+    // Monster dots
+    const rev = world.map.revealed;
+    ctx.fillStyle = '#FF3300';
+    for (const m of world.monsters) {
+      if (!m.alive) continue;
+      if (!rev[m.y*MAP_W+m.x]) continue;
+      const dmx = Math.round(mx + m.x * scale);
+      const dmy = Math.round(my + m.y * scale);
+      ctx.fillRect(dmx - 1, dmy - 1, 2, 2);
+    }
+    // Player dot
+    const ppx = Math.round(mx + p.x * scale);
+    const ppy = Math.round(my + p.y * scale);
+    ctx.fillStyle = '#00FF88';
+    ctx.fillRect(ppx - 2, ppy - 2, 4, 4);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(ppx - 1, ppy - 1, 2, 2);
+    // Border
+    ctx.strokeStyle = '#8B6914'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(mx - 0.5, my - 0.5, mmSz + 1, mmSz + 1);
+    // "MAPA" label
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fillRect(mx + 1, my + 1, 30, 11);
+    ctx.font = 'bold 8px monospace';
+    ctx.fillStyle = '#C8A860';
+    ctx.fillText('MAPA', mx + 3, my + 10);
+    return my + mmSz + 6;
+  }
+
+  _drawUI(ctx, world, ux, uw, uh, startY = 14) {
     this.spellBtnRects = [];
     const p = world.player;
-    let y = 14;
+    let y = startY;
     const tx = ux+8, tw = uw-16;
 
     const label = (text, color, bold) => {
