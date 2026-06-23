@@ -412,10 +412,17 @@ const ITEMS = {
   47: {n:'Dragon Scale Armor', t:'armor',  atk:0,  def:40, hp:0,   mp:0,  val:8000,  lvl:60, color:'#CC3300'},
   48: {n:'Magic Plate Armor',  t:'armor',  atk:0,  def:52, hp:0,   mp:0,  val:25000, lvl:80, color:'#88BBFF'},
   // ── HELMETS ────────────────────────────────────────────────────────────
-  11: {n:'Leather Helm',       t:'helmet', atk:0,  def:3,  hp:0,   mp:0,  val:30,    lvl:1,  color:'#8B4513'},
-  12: {n:'Iron Helmet',        t:'helmet', atk:0,  def:8,  hp:0,   mp:0,  val:150,   lvl:10, color:'#999999'},
-  49: {n:'Full Plate Helmet',  t:'helmet', atk:0,  def:14, hp:0,   mp:0,  val:500,   lvl:25, color:'#BBBBBB'},
-  50: {n:'Crown Helmet',       t:'helmet', atk:0,  def:20, hp:0,   mp:0,  val:2000,  lvl:50, color:'#FFD700'},
+  11: {n:'Leather Helmet',      t:'helmet', atk:0, def:1,  hp:0, mp:0,  val:20,    lvl:1,  color:'#8B4513', spr:null},
+  12: {n:'Iron Helmet',         t:'helmet', atk:0, def:3,  hp:0, mp:0,  val:120,   lvl:5,  color:'#888888', spr:null},
+  49: {n:'Brass Helmet',        t:'helmet', atk:0, def:2,  hp:0, mp:0,  val:60,    lvl:3,  color:'#B8860B', spr:null},
+  50: {n:'Chain Helmet',        t:'helmet', atk:0, def:4,  hp:0, mp:0,  val:200,   lvl:8,  color:'#AAAAAA', spr:null},
+  60: {n:'Crown',               t:'helmet', atk:0, def:5,  hp:0, mp:20, val:800,   lvl:20, color:'#FFD700', spr:null},
+  61: {n:'Crown Helmet',        t:'helmet', atk:0, def:20, hp:0, mp:0,  val:5000,  lvl:55, color:'#FFD700', spr:null},
+  62: {n:'Crusader Helmet',     t:'helmet', atk:0, def:11, hp:0, mp:0,  val:2000,  lvl:40, color:'#BBBBBB', spr:null},
+  63: {n:'Dark Helmet',         t:'helmet', atk:0, def:10, hp:0, mp:0,  val:1500,  lvl:30, color:'#333333', spr:null},
+  64: {n:'Golden Helmet',       t:'helmet', atk:0, def:14, hp:0, mp:0,  val:8000,  lvl:60, color:'#FFD700', spr:null},
+  65: {n:'Hat of the Mad',      t:'helmet', atk:5, def:0,  hp:0, mp:30, val:3000,  lvl:35, color:'#8844AA', spr:null},
+  66: {n:'Full Plate Helmet',   t:'helmet', atk:0, def:14, hp:0, mp:0,  val:1200,  lvl:25, color:'#BBBBBB', spr:null},
   // ── LEGS ───────────────────────────────────────────────────────────────
   51: {n:'Leather Legs',       t:'legs',   atk:0,  def:4,  hp:0,   mp:0,  val:35,    lvl:1,  color:'#8B4513'},
   52: {n:'Chain Legs',         t:'legs',   atk:0,  def:9,  hp:0,   mp:0,  val:160,   lvl:10, color:'#999999'},
@@ -3301,9 +3308,14 @@ function _updateEqGrid(p){
     if(item){
       div.className='tb-eq-slot has-item';
       const col=item.color||'#666';
-      // Short name — at most 2 words truncated
       const short=item.n.split(' ').slice(0,2).join(' ');
-      div.innerHTML=`<div class="tb-item-rect" style="background:${col}"></div><span class="tb-slot-lbl">${short}</span>`;
+      if(item.spr!=null){
+        // Show CDN sprite image in slot
+        const url=`${PADV_CDN}/item/${item.spr}.png`;
+        div.innerHTML=`<img src="${url}" style="width:34px;height:34px;image-rendering:pixelated;border:1px solid rgba(255,255,255,.15)" onerror="this.outerHTML='<div class=\\'tb-item-rect\\' style=\\'background:${col}\\'></div>'"><span class="tb-slot-lbl">${short}</span>`;
+      } else {
+        div.innerHTML=`<div class="tb-item-rect" style="background:${col}"></div><span class="tb-slot-lbl">${short}</span>`;
+      }
     } else {
       div.className='tb-eq-slot';
       div.innerHTML=`<div class="tb-slot-empty-cross"></div><span class="tb-slot-lbl">${s.label}</span>`;
