@@ -25,69 +25,174 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
 #continueBtn{background:#1a0e05;border:2px solid #44AA44;color:#44FF88;padding:14px 40px;font-size:18px;font-family:inherit;font-weight:bold;cursor:pointer;border-radius:4px;margin-bottom:8px;letter-spacing:2px;width:100%;max-width:500px;display:none}
 #continueBtn:hover{background:#112211;border-color:#88FF88}
 .save-info{color:#5C9A5C;font-size:12px;text-align:center;margin-bottom:6px;width:100%;max-width:500px;display:none}
-/* ─── TIBIA CLIENT LAYOUT ─── */
-#gameWrap{display:none;flex-direction:column;width:100vw;height:100vh}
+/* ══════════════════════════════════════════════════
+   TIBIA CLASSIC CLIENT — authentic 8.x visual style
+   ══════════════════════════════════════════════════ */
+#gameWrap{display:none;flex-direction:column;width:100vw;height:100vh;background:#0a0800}
 #gameWrap.active{display:flex}
 #tibiaClient{display:flex;flex:1;min-height:0;overflow:hidden}
-#gameViewport{flex:1;position:relative;min-width:0;background:#000;overflow:hidden}
+/* Game viewport */
+#gameViewport{flex:1;position:relative;min-width:0;background:#000;border-right:1px solid #6B4C10;overflow:hidden}
 #gameCanvas{display:block;position:absolute;top:0;left:0}
-#gameSidebar{width:190px;flex-shrink:0;background:#080400;border-left:2px solid #5C3317;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#3d1f08 #0a0500}
+/* Right sidebar — classic Tibia chrome */
+#gameSidebar{
+  width:176px;flex-shrink:0;
+  background:#100C00;
+  border-left:2px solid #7A5520;
+  display:flex;flex-direction:column;
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:#3A2508 #100C00;
+  font-family:'Courier New',monospace;font-size:9px;
+}
 #gameSidebar::-webkit-scrollbar{width:4px}
-#gameSidebar::-webkit-scrollbar-thumb{background:#3d1f08}
-.tb-panel{border:1px solid #5C3317;border-top:2px solid #8B6914;margin:3px 3px 0;background:#0a0500}
-.tb-panel:last-child{margin-bottom:3px}
-.tb-phead{background:linear-gradient(to bottom,#3d1f08,#1a0a00);padding:3px 6px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #5C3317;font-size:10px;font-weight:bold;color:#C8A860;letter-spacing:1px;text-transform:uppercase;cursor:default}
-.tb-pbody{padding:5px 6px}
-#tbFloorLabel{font-size:10px;text-align:center;padding:3px 0;background:#030200;border-bottom:1px solid #2d1500;font-weight:bold;letter-spacing:1px;flex-shrink:0}
-#tbMinimap{display:block;width:184px;height:184px;image-rendering:pixelated;border:1px solid #5C3317;margin:3px auto;flex-shrink:0}
-.tb-gold{font-size:11px;color:#FFD700;margin-bottom:5px;font-weight:bold}
+#gameSidebar::-webkit-scrollbar-thumb{background:#3A2508}
+/* Tibia window panels */
+.tb-panel{
+  border-top:1px solid #7A5520;
+  border-bottom:1px solid #3A2508;
+  margin:2px 2px 0;
+  background:#0a0800;
+  flex-shrink:0;
+}
+.tb-panel:last-child{margin-bottom:2px}
+.tb-phead{
+  background:linear-gradient(to bottom,#3A2808,#1a1200);
+  padding:2px 5px;
+  display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid #3A2508;
+  font-size:9px;font-weight:bold;
+  color:#C8A050;letter-spacing:.5px;
+  cursor:default;user-select:none;
+}
+.tb-pbody{padding:4px 5px}
+/* Floor label */
+#tbFloorLabel{
+  font-size:9px;text-align:center;padding:2px 0;
+  background:#080600;color:#44AA44;
+  border-bottom:1px solid #3A2508;
+  font-weight:bold;letter-spacing:1px;flex-shrink:0;
+}
+/* Minimap */
+#tbMinimap{
+  display:block;width:172px;height:172px;
+  image-rendering:pixelated;image-rendering:crisp-edges;
+  border:1px solid #3A2508;
+  box-shadow:inset 0 0 0 1px #6B4C10;
+  margin:2px auto;flex-shrink:0;
+}
+/* Character stats */
+.tb-char-name{font-size:10px;color:#FFD700;font-weight:bold;margin-bottom:1px}
+.tb-char-voc{font-size:9px;color:#8B7040;margin-bottom:4px}
+.tb-gold-row{font-size:9px;color:#FFD700;margin-bottom:4px;display:flex;align-items:center;gap:3px}
+/* HP/MP/XP bars — thin, exact Tibia style */
 .tb-bar-wrap{margin-bottom:3px}
-.tb-bar-label{font-size:9px;color:#888;display:flex;justify-content:space-between;margin-bottom:1px}
-.tb-bar{height:9px;background:#1a0e05;border:1px solid #2d1500;overflow:hidden}
+.tb-bar-row{display:flex;align-items:center;gap:3px;margin-bottom:2px}
+.tb-bar-key{font-size:8px;color:#7A6030;width:14px;flex-shrink:0}
+.tb-bar-val{font-size:8px;color:#A09070;width:56px;flex-shrink:0;text-align:right}
+.tb-bar{flex:1;height:8px;background:#1a1000;border:1px solid #3A2508;overflow:hidden;box-shadow:inset 1px 1px 0 rgba(0,0,0,.5)}
 .tb-bar-fill{height:100%}
-.tb-hp .tb-bar-fill{background:linear-gradient(to right,#660000,#CC0000)}
-.tb-mp .tb-bar-fill{background:linear-gradient(to right,#000066,#0044CC)}
-.tb-xp .tb-bar-fill{background:linear-gradient(to right,#1a4400,#44AA00)}
-.tb-stats{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:5px}
-.tb-stat{font-size:10px;color:#888}
-.tb-stat span{color:#FFD700;font-weight:bold}
-.tb-eq-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
-.tb-eq-slot{background:#050200;border:1px solid #2d1500;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:2px;padding:3px 2px;min-height:46px;cursor:pointer;text-align:center;overflow:hidden}
-.tb-eq-slot.has-item{border-color:#6B4F10;background:#0f0800}
-.tb-eq-slot.spacer{background:transparent;border-color:transparent;cursor:default}
-.tb-slot-icon{font-size:14px;line-height:1;margin-bottom:1px}
-.tb-slot-name{font-size:7px;color:#3d1f08;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:58px}
-.tb-eq-slot.has-item .tb-slot-name{color:#C8A860}
-.tb-battle-entry{margin-bottom:5px}
-.tb-battle-name{font-size:9px;color:#DDD;margin-bottom:2px}
-.tb-battle-bar{height:6px;background:#1a0e05;border:1px solid #2d1500;overflow:hidden;border-radius:1px}
-.tb-battle-fill{height:100%;border-radius:1px}
+.tb-hp .tb-bar-fill{background:#CC0000}
+.tb-mp .tb-bar-fill{background:#0044CC}
+.tb-xp .tb-bar-fill{background:#44AA00}
+/* Stats row */
+.tb-stat-row{display:flex;gap:8px;margin-top:3px;font-size:9px;color:#8B7040}
+.tb-stat-row b{color:#FFD700}
+/* Equipment grid — Tibia 8.x style slots */
+.tb-eq-grid{
+  display:grid;
+  grid-template-columns:repeat(3,50px);
+  grid-template-rows:repeat(4,50px);
+  gap:2px;
+  justify-content:center;
+}
+.tb-eq-slot{
+  width:50px;height:50px;
+  background:#0a0800;
+  border:1px solid #3A2508;
+  box-shadow:inset -1px -1px 0 #1a1200, inset 1px 1px 0 #4A3A10;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  cursor:pointer;overflow:hidden;position:relative;
+}
+.tb-eq-slot:hover:not(.spacer){border-color:#7A5520}
+.tb-eq-slot.spacer{background:transparent;border-color:transparent;box-shadow:none;cursor:default}
+/* Item icon inside slot — colored rect like Tibia */
+.tb-item-rect{
+  width:34px;height:34px;
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:1px 1px 0 rgba(0,0,0,.8);
+  flex-shrink:0;
+}
+.tb-slot-lbl{
+  position:absolute;bottom:1px;left:0;right:0;
+  text-align:center;font-size:6px;color:#7A6030;
+  text-transform:uppercase;letter-spacing:.3px;
+}
+.tb-eq-slot.has-item .tb-slot-lbl{color:#C8A050}
+.tb-slot-empty-cross{
+  width:28px;height:28px;opacity:.12;
+  border:1px dashed #6B4C10;
+}
+/* Battle list */
+.tb-battle-entry{margin-bottom:4px}
+.tb-battle-name{font-size:9px;color:#DDCC88;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-battle-hp{height:5px;background:#1a1000;border:1px solid #3A2508;overflow:hidden}
+.tb-battle-fill{height:100%}
 /* Chat panel */
-#chatPanel{height:86px;flex-shrink:0;background:#080400;border-top:2px solid #5C3317;overflow:hidden;display:flex;flex-direction:column}
-#chatLog{flex:1;overflow-y:auto;padding:4px 8px;font-size:11px;font-family:'Courier New',monospace;scrollbar-width:thin;scrollbar-color:#3d1f08 #0a0500}
+#chatPanel{
+  height:82px;flex-shrink:0;
+  background:#080600;
+  border-top:2px solid #6B4C10;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+#chatTab{font-size:9px;color:#8B7040;padding:1px 6px;background:#0f0c00;border-bottom:1px solid #3A2508}
+#chatLog{
+  flex:1;overflow-y:auto;padding:3px 6px;
+  font-size:10px;color:#C8C0A0;line-height:1.35;
+  font-family:'Courier New',monospace;
+  scrollbar-width:thin;scrollbar-color:#3A2508 #080600;
+}
 #chatLog::-webkit-scrollbar{width:4px}
-#chatLog::-webkit-scrollbar-thumb{background:#3d1f08}
-.chat-msg{line-height:1.4;word-break:break-word}
-/* Bottom bar */
-#bottomBar{background:#0a0500;border-top:2px solid #8B6914;display:flex;align-items:center;gap:4px;padding:4px 8px;flex-shrink:0;min-height:52px}
+#chatLog::-webkit-scrollbar-thumb{background:#3A2508}
+.chat-msg{word-break:break-word}
+/* Bottom bar — hotkey row */
+#bottomBar{
+  background:#0f0c00;
+  border-top:2px solid #6B4C10;
+  display:flex;align-items:center;gap:3px;
+  padding:3px 6px;flex-shrink:0;min-height:50px;
+}
 /* D-pad (mobile touch only) */
 #dpad{display:none;position:absolute;bottom:8px;left:8px}
 @media(pointer:coarse){#dpad{display:grid}}
-.dp{background:rgba(40,20,0,.75);border:2px solid #7A4A1A;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#E8C060;cursor:pointer;-webkit-user-select:none;font-weight:bold;width:48px;height:48px}
-.dp:active,.dp.active{background:rgba(139,105,20,.9);color:#FFD700;border-color:#FFD700}
-/* Action buttons - Tibia desktop style */
-#actionBtns{display:flex;gap:3px;align-items:center;margin-right:8px;flex-shrink:0}
-.abtn{background:#1a0e05;border:2px solid #5C3317;color:#C8A860;padding:5px 9px;font-family:inherit;cursor:pointer;font-size:11px;font-weight:bold;border-radius:3px;white-space:nowrap;letter-spacing:.5px;transition:background .1s,border-color .1s}
-.abtn:hover{background:#3d1f08;border-color:#8B6914;color:#FFD700}
-.abtn:active{background:#5C3317;color:#FFD700}
-/* Spell bar */
-#spellBar{flex:1;display:flex;align-items:center;gap:3px;overflow-x:auto;scrollbar-width:none;padding:0 2px}
+.dp{background:rgba(20,15,0,.85);border:1px solid #5A3A10;border-bottom:2px solid #2A1800;border-right:2px solid #2A1800;display:flex;align-items:center;justify-content:center;color:#C8A050;cursor:pointer;-webkit-user-select:none;font-weight:bold;width:48px;height:48px;font-size:18px}
+.dp:active,.dp.active{background:rgba(80,55,0,.9);border-top:2px solid #2A1800;border-left:2px solid #2A1800;border-bottom:1px solid #5A3A10;border-right:1px solid #5A3A10}
+/* Action buttons */
+#actionBtns{display:flex;gap:3px;align-items:center;margin-right:6px;flex-shrink:0}
+.abtn{
+  background:#1a1200;
+  border:1px solid #6B4C10;border-bottom:2px solid #2A1800;border-right:2px solid #2A1800;
+  color:#C8A050;padding:4px 8px;font-family:inherit;
+  cursor:pointer;font-size:10px;font-weight:bold;
+  white-space:nowrap;
+}
+.abtn:hover{background:#2A1E00;color:#FFD700}
+.abtn:active{border-top:2px solid #2A1800;border-left:2px solid #2A1800;border-bottom:1px solid #6B4C10;border-right:1px solid #6B4C10}
+/* Spell hotkeys — F-key style */
+#spellBar{flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;scrollbar-width:none;padding:0 2px}
 #spellBar::-webkit-scrollbar{display:none}
-.sbtn{background:#0f0800;border:2px solid #3d1f08;color:#C8A860;font-family:inherit;cursor:pointer;border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;padding:2px 4px;min-width:52px;height:42px;position:relative;overflow:hidden;transition:border-color .1s}
-.sbtn:hover{border-color:#8B6914}
-.sbtn:active{background:#1a0e05}
-.sbtn.locked{opacity:.32;cursor:default}
-.sbtn .scd-ov{position:absolute;left:0;top:0;bottom:0;background:rgba(0,0,0,.58);pointer-events:none}
+.sbtn{
+  background:#1a1200;
+  border:1px solid #6B4C10;border-bottom:2px solid #2A1800;border-right:2px solid #2A1800;
+  color:#C8A050;font-family:inherit;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex-shrink:0;padding:2px 3px;min-width:48px;height:44px;
+  position:relative;overflow:hidden;
+}
+.sbtn:hover{background:#2A1E00;border-color:#7A5520}
+.sbtn:active{border-top:2px solid #2A1800;border-left:2px solid #2A1800;border-bottom:1px solid #6B4C10;border-right:1px solid #6B4C10}
+.sbtn.locked{opacity:.30;cursor:default}
+.sbtn .scd-ov{position:absolute;left:0;top:0;bottom:0;background:rgba(0,0,0,.6);pointer-events:none}
 #invModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center}
 #invModal.show{display:flex}
 #invBox{background:#1a0e05;border:3px solid #8B6914;padding:16px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;border-radius:4px;color:#E8D5B7}
@@ -155,48 +260,45 @@ html,body{width:100%;height:100%;background:#0a0500;overflow:hidden;font-family:
       </div>
     </div>
     <div id="gameSidebar">
-      <div id="tbFloorLabel" style="color:#44AA44">◆ Superfície</div>
-      <canvas id="tbMinimap" width="184" height="184"></canvas>
+      <div id="tbFloorLabel">◆ Superfície</div>
+      <canvas id="tbMinimap" width="172" height="172"></canvas>
       <div class="tb-panel">
-        <div class="tb-phead">
-          <span id="tbCharName">—</span>
-          <span id="tbCharVoc" style="color:#8B8B8B">Lv.1</span>
-        </div>
+        <div class="tb-phead"><span id="tbCharName">—</span><span id="tbCharVoc" style="color:#6B5030">Lv.1</span></div>
         <div class="tb-pbody">
-          <div class="tb-gold" id="tbGold">Gold: 0</div>
-          <div class="tb-bar-wrap">
-            <div class="tb-bar-label"><span>HP</span><span id="tbHpNum">—</span></div>
-            <div class="tb-bar tb-hp"><div class="tb-bar-fill" id="tbHpFill" style="width:100%"></div></div>
+          <div class="tb-gold-row">💰 <span id="tbGold">0</span> gp</div>
+          <div class="tb-bar-row tb-hp">
+            <span class="tb-bar-key">HP</span>
+            <div class="tb-bar"><div class="tb-bar-fill" id="tbHpFill" style="width:100%"></div></div>
+            <span class="tb-bar-val" id="tbHpNum">—</span>
           </div>
-          <div class="tb-bar-wrap">
-            <div class="tb-bar-label"><span>MP</span><span id="tbMpNum">—</span></div>
-            <div class="tb-bar tb-mp"><div class="tb-bar-fill" id="tbMpFill" style="width:0%"></div></div>
+          <div class="tb-bar-row tb-mp">
+            <span class="tb-bar-key">MP</span>
+            <div class="tb-bar"><div class="tb-bar-fill" id="tbMpFill" style="width:0%"></div></div>
+            <span class="tb-bar-val" id="tbMpNum">—</span>
           </div>
-          <div class="tb-bar-wrap">
-            <div class="tb-bar-label"><span>XP</span><span id="tbXpNum">—</span></div>
-            <div class="tb-bar tb-xp"><div class="tb-bar-fill" id="tbXpFill" style="width:0%"></div></div>
+          <div class="tb-bar-row tb-xp">
+            <span class="tb-bar-key">XP</span>
+            <div class="tb-bar"><div class="tb-bar-fill" id="tbXpFill" style="width:0%"></div></div>
+            <span class="tb-bar-val" id="tbXpNum">—</span>
           </div>
-          <div class="tb-stats">
-            <div class="tb-stat">ATK <span id="tbAtk">—</span></div>
-            <div class="tb-stat">DEF <span id="tbDef">—</span></div>
-            <div class="tb-stat">HP Pot <span id="tbHpPots">0</span></div>
-            <div class="tb-stat">MP Pot <span id="tbMpPots">0</span></div>
-          </div>
+          <div class="tb-stat-row">Atk <b id="tbAtk">—</b> &nbsp; Def <b id="tbDef">—</b></div>
+          <div class="tb-stat-row">HP Pot <b id="tbHpPots">0</b> &nbsp; MP Pot <b id="tbMpPots">0</b></div>
         </div>
       </div>
       <div class="tb-panel">
-        <div class="tb-phead">Equipamento</div>
-        <div class="tb-pbody">
+        <div class="tb-phead">Equipment</div>
+        <div class="tb-pbody" style="padding:4px 3px">
           <div class="tb-eq-grid" id="tbEqGrid"></div>
         </div>
       </div>
       <div class="tb-panel">
         <div class="tb-phead">Battle</div>
-        <div class="tb-pbody" id="tbBattle"><span style="font-size:9px;color:#444">Sem inimigos próximos</span></div>
+        <div class="tb-pbody" id="tbBattle" style="min-height:20px"></div>
       </div>
     </div>
   </div>
   <div id="chatPanel">
+    <div id="chatTab">Default</div>
     <div id="chatLog"></div>
   </div>
   <div id="bottomBar">
@@ -2177,7 +2279,7 @@ class Renderer {
 
   renderMinimap(world) {
     const el = document.getElementById('tbMinimap');
-    if (!el || !world) return;
+    if (!el || !world || !this.mapW) return;
     if (!this._mmCanvas) this._buildMinimap(world);
     this._updateFog(world);
     const cw = el.width, ch = el.height;
@@ -2825,18 +2927,23 @@ function _e(id){return document.getElementById(id)}
 function _etxt(id,v){const el=_e(id);if(el)el.textContent=v}
 function _estyle(id,prop,v){const el=_e(id);if(el)el.style[prop]=v}
 
+/* EQ slot layout — matches Tibia 8.x arrangement:
+   row0: Head  _     Neck
+   row1: Left  Body  Right
+   row2: Ring  Legs  _
+   row3: _     Feet  _          */
 const EQ_LAYOUT=[
-  {slot:'helmet',icon:'⛑',label:'Helm'},
+  {slot:'helmet',label:'Head'},
   null,
-  {slot:'amulet',icon:'📿',label:'Amu'},
-  {slot:'weapon',icon:'⚔',label:'Weap'},
-  {slot:'armor', icon:'🛡',label:'Arm'},
-  {slot:'shield',icon:'🔰',label:'Shld'},
-  {slot:'ring',  icon:'💍',label:'Ring'},
-  {slot:'legs',  icon:'🩲',label:'Legs'},
+  {slot:'amulet',label:'Neck'},
+  {slot:'weapon',label:'Left'},
+  {slot:'armor', label:'Body'},
+  {slot:'shield',label:'Right'},
+  {slot:'ring',  label:'Ring'},
+  {slot:'legs',  label:'Legs'},
   null,
   null,
-  {slot:'boots', icon:'👟',label:'Boot'},
+  {slot:'boots', label:'Feet'},
   null,
 ];
 let _eqBuilt=false;
@@ -2849,7 +2956,7 @@ function _buildEqGrid(){
     else{
       div.className='tb-eq-slot';
       div.dataset.slot=s.slot;
-      div.innerHTML=`<span class="tb-slot-icon">${s.icon}</span><span class="tb-slot-name">${s.label}</span>`;
+      div.innerHTML=`<div class="tb-slot-empty-cross"></div><span class="tb-slot-lbl">${s.label}</span>`;
     }
     grid.appendChild(div);
   });
@@ -2864,11 +2971,15 @@ function _updateEqGrid(p){
     const div=cells[i]; if(!div)return;
     const itemId=p.eq[s.slot];
     const item=itemId?ITEMS[itemId]:null;
-    div.className='tb-eq-slot'+(item?' has-item':'');
     if(item){
-      div.innerHTML=`<span class="tb-slot-icon">${s.icon}</span><span class="tb-slot-name">${item.n}</span>`;
+      div.className='tb-eq-slot has-item';
+      const col=item.color||'#666';
+      // Short name — at most 2 words truncated
+      const short=item.n.split(' ').slice(0,2).join(' ');
+      div.innerHTML=`<div class="tb-item-rect" style="background:${col}"></div><span class="tb-slot-lbl">${short}</span>`;
     } else {
-      div.innerHTML=`<span class="tb-slot-icon" style="opacity:.25">${s.icon}</span><span class="tb-slot-name">${s.label}</span>`;
+      div.className='tb-eq-slot';
+      div.innerHTML=`<div class="tb-slot-empty-cross"></div><span class="tb-slot-lbl">${s.label}</span>`;
     }
   });
 }
@@ -2879,12 +2990,12 @@ function _updateBattle(world){
     .filter(m=>m.alive&&Math.max(Math.abs(m.x-p.x),Math.abs(m.y-p.y))<=8)
     .sort((a,b)=>Math.max(Math.abs(a.x-p.x),Math.abs(a.y-p.y))-Math.max(Math.abs(b.x-p.x),Math.abs(b.y-p.y)))
     .slice(0,6);
-  if(!nearby.length){el.innerHTML='<span style="font-size:9px;color:#444">Sem inimigos próximos</span>';return;}
+  if(!nearby.length){el.innerHTML='<span style="font-size:8px;color:#3A2808">No creatures nearby</span>';return;}
   let html='';
   for(const m of nearby){
     const hpPct=Math.max(0,m.hp/m.maxHp*100);
-    const col=hpPct>60?'#008800':hpPct>30?'#888800':'#880000';
-    html+=`<div class="tb-battle-entry"><div class="tb-battle-name">${m.name} <span style="color:#555;font-size:8px">${m.hp}/${m.maxHp}</span></div><div class="tb-battle-bar"><div class="tb-battle-fill" style="width:${hpPct}%;background:${col}"></div></div></div>`;
+    const col=hpPct>60?'#008800':hpPct>30?'#888800':'#CC0000';
+    html+=`<div class="tb-battle-entry"><div class="tb-battle-name" style="color:${m.color||'#DDCC88'}">${m.name}</div><div class="tb-battle-hp"><div class="tb-battle-fill" style="width:${hpPct}%;background:${col}"></div></div></div>`;
   }
   el.innerHTML=html;
 }
@@ -2921,12 +3032,12 @@ function updateHtmlUI(world){
   // Character
   _etxt('tbCharName',p.name);
   _etxt('tbCharVoc',`${p.voc} Lv.${p.level}`);
-  _etxt('tbGold',`Gold: ${p.gold}`);
+  _etxt('tbGold',p.gold);
   // HP bar
   const hpPct=Math.max(0,p.hp/p.maxHp*100);
   _estyle('tbHpFill','width',hpPct+'%');
   const hpEl=_e('tbHpFill');
-  if(hpEl){hpEl.style.background=hpPct>60?'linear-gradient(to right,#004400,#008800)':hpPct>30?'linear-gradient(to right,#444400,#888800)':'linear-gradient(to right,#660000,#CC0000)';}
+  if(hpEl)hpEl.style.background=hpPct>60?'#00AA00':hpPct>30?'#AAAA00':'#CC0000';
   _etxt('tbHpNum',`${p.hp}/${p.maxHp}`);
   // MP bar
   const mpPct=p.maxMp>0?Math.max(0,p.mp/p.maxMp*100):0;
@@ -2957,7 +3068,7 @@ let heldDir = null, heldInterval = null;
 
 function setupLayout() {
   const vp = document.getElementById('gameViewport');
-  const sidebarW = 190, chatH = 86, bottomH = 52;
+  const sidebarW = 180, chatH = 82, bottomH = 50;
   const vpW = Math.max(200, window.innerWidth - sidebarW);
   const vpH = Math.max(200, window.innerHeight - chatH - bottomH);
   TILE = Math.max(24, Math.min(40, Math.floor(vpH / 14)));
