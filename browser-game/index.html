@@ -379,75 +379,75 @@ const TILE_DEF = {
 
 const ITEMS = {
   // ── SWORDS ─────────────────────────────────────────────────────────────
-  1:  {n:'Sword',              t:'weapon', atk:10, def:0,  hp:0,   mp:0,  val:50,    lvl:1,  color:'#BBBBBB'},
-  2:  {n:'Long Sword',         t:'weapon', atk:18, def:0,  hp:0,   mp:0,  val:150,   lvl:10, color:'#AAAAAA'},
-  3:  {n:'2H Sword',           t:'weapon', atk:28, def:0,  hp:0,   mp:0,  val:400,   lvl:20, color:'#999999'},
-  7:  {n:'Knight Sword',       t:'weapon', atk:38, def:0,  hp:0,   mp:0,  val:900,   lvl:35, color:'#CCCCDD'},
-  32: {n:'Giant Sword',        t:'weapon', atk:50, def:0,  hp:0,   mp:0,  val:2500,  lvl:50, color:'#DDDDEE'},
-  33: {n:'Bright Sword',       t:'weapon', atk:65, def:0,  hp:0,   mp:0,  val:8000,  lvl:70, color:'#EEEEFF'},
+  1:  {n:'Sword',              t:'weapon', atk:10, def:0,  hp:0,   mp:0,  val:50,    lvl:1,  color:'#BBBBBB', spr:3272},
+  2:  {n:'Long Sword',         t:'weapon', atk:18, def:0,  hp:0,   mp:0,  val:150,   lvl:10, color:'#AAAAAA', spr:3264},
+  3:  {n:'2H Sword',           t:'weapon', atk:28, def:0,  hp:0,   mp:0,  val:400,   lvl:20, color:'#999999', spr:3260},
+  7:  {n:'Knight Sword',       t:'weapon', atk:38, def:0,  hp:0,   mp:0,  val:900,   lvl:35, color:'#CCCCDD', spr:3266},
+  32: {n:'Giant Sword',        t:'weapon', atk:50, def:0,  hp:0,   mp:0,  val:2500,  lvl:50, color:'#DDDDEE', spr:3265},
+  33: {n:'Bright Sword',       t:'weapon', atk:65, def:0,  hp:0,   mp:0,  val:8000,  lvl:70, color:'#EEEEFF', spr:3262},
   // ── AXES ───────────────────────────────────────────────────────────────
-  4:  {n:'Axe',                t:'weapon', atk:9,  def:0,  hp:0,   mp:0,  val:40,    lvl:1,  color:'#888888'},
-  5:  {n:'Battle Axe',         t:'weapon', atk:20, def:0,  hp:0,   mp:0,  val:200,   lvl:15, color:'#777777'},
-  34: {n:'War Axe',            t:'weapon', atk:32, def:0,  hp:0,   mp:0,  val:600,   lvl:30, color:'#8888AA'},
-  35: {n:'Chaos Mace',         t:'weapon', atk:48, def:0,  hp:0,   mp:0,  val:2000,  lvl:50, color:'#AA88AA'},
+  4:  {n:'Axe',                t:'weapon', atk:9,  def:0,  hp:0,   mp:0,  val:40,    lvl:1,  color:'#888888', spr:3274},
+  5:  {n:'Battle Axe',         t:'weapon', atk:20, def:0,  hp:0,   mp:0,  val:200,   lvl:15, color:'#777777', spr:3278},
+  34: {n:'War Axe',            t:'weapon', atk:32, def:0,  hp:0,   mp:0,  val:600,   lvl:30, color:'#8888AA', spr:3279},
+  35: {n:'Chaos Mace',         t:'weapon', atk:48, def:0,  hp:0,   mp:0,  val:2000,  lvl:50, color:'#AA88AA', spr:3285},
   // ── CLUBS ──────────────────────────────────────────────────────────────
-  6:  {n:'Club',               t:'weapon', atk:6,  def:0,  hp:0,   mp:0,  val:20,    lvl:1,  color:'#8B4513'},
-  36: {n:'Mace',               t:'weapon', atk:14, def:0,  hp:0,   mp:0,  val:120,   lvl:8,  color:'#9C5614'},
-  37: {n:'War Hammer',         t:'weapon', atk:25, def:0,  hp:0,   mp:0,  val:350,   lvl:22, color:'#7A4010'},
+  6:  {n:'Club',               t:'weapon', atk:6,  def:0,  hp:0,   mp:0,  val:20,    lvl:1,  color:'#8B4513', spr:3270},
+  36: {n:'Mace',               t:'weapon', atk:14, def:0,  hp:0,   mp:0,  val:120,   lvl:8,  color:'#9C5614', spr:3286},
+  37: {n:'War Hammer',         t:'weapon', atk:25, def:0,  hp:0,   mp:0,  val:350,   lvl:22, color:'#7A4010', spr:3268},
   // ── PALADIN (ranged) ───────────────────────────────────────────────────
-  38: {n:'Short Bow',          t:'weapon', atk:12, def:0,  hp:0,   mp:0,  val:80,    lvl:1,  color:'#8B6914'},
-  39: {n:'Crossbow',           t:'weapon', atk:22, def:0,  hp:0,   mp:0,  val:300,   lvl:12, color:'#AA8820'},
-  40: {n:'Elven Bow',          t:'weapon', atk:35, def:0,  hp:0,   mp:0,  val:800,   lvl:28, color:'#88AA44'},
-  41: {n:'Arbalest',           t:'weapon', atk:52, def:0,  hp:0,   mp:0,  val:3000,  lvl:55, color:'#AABBCC'},
+  38: {n:'Short Bow',          t:'weapon', atk:12, def:0,  hp:0,   mp:0,  val:80,    lvl:1,  color:'#8B6914', spr:3054},
+  39: {n:'Crossbow',           t:'weapon', atk:22, def:0,  hp:0,   mp:0,  val:300,   lvl:12, color:'#AA8820', spr:3549},
+  40: {n:'Elven Bow',          t:'weapon', atk:35, def:0,  hp:0,   mp:0,  val:800,   lvl:28, color:'#88AA44', spr:null},
+  41: {n:'Arbalest',           t:'weapon', atk:52, def:0,  hp:0,   mp:0,  val:3000,  lvl:55, color:'#AABBCC', spr:null},
   // ── MAGE (wands/rods) ──────────────────────────────────────────────────
-  42: {n:'Wand of Decay',      t:'weapon', atk:8,  def:0,  hp:0,   mp:0,  val:100,   lvl:1,  color:'#AA44CC'},
-  43: {n:'Wand of Inferno',    t:'weapon', atk:18, def:0,  hp:0,   mp:0,  val:350,   lvl:14, color:'#FF4400'},
-  44: {n:'Snakebite Rod',      t:'weapon', atk:28, def:0,  hp:0,   mp:0,  val:700,   lvl:26, color:'#44CC44'},
-  45: {n:'Wand of Cosmic',     t:'weapon', atk:45, def:0,  hp:0,   mp:0,  val:2200,  lvl:48, color:'#4488FF'},
+  42: {n:'Wand of Decay',      t:'weapon', atk:8,  def:0,  hp:0,   mp:0,  val:100,   lvl:1,  color:'#AA44CC', spr:3185},
+  43: {n:'Wand of Inferno',    t:'weapon', atk:18, def:0,  hp:0,   mp:0,  val:350,   lvl:14, color:'#FF4400', spr:null},
+  44: {n:'Snakebite Rod',      t:'weapon', atk:28, def:0,  hp:0,   mp:0,  val:700,   lvl:26, color:'#44CC44', spr:3192},
+  45: {n:'Wand of Cosmic',     t:'weapon', atk:45, def:0,  hp:0,   mp:0,  val:2200,  lvl:48, color:'#4488FF', spr:null},
   // ── ARMOR ──────────────────────────────────────────────────────────────
-  8:  {n:'Leather Armor',      t:'armor',  atk:0,  def:8,  hp:0,   mp:0,  val:60,    lvl:1,  color:'#8B4513'},
-  9:  {n:'Chain Armor',        t:'armor',  atk:0,  def:14, hp:0,   mp:0,  val:200,   lvl:10, color:'#999999'},
-  10: {n:'Plate Armor',        t:'armor',  atk:0,  def:22, hp:0,   mp:0,  val:800,   lvl:25, color:'#BBBBBB'},
-  46: {n:'Golden Armor',       t:'armor',  atk:0,  def:30, hp:0,   mp:0,  val:2500,  lvl:40, color:'#FFD700'},
-  47: {n:'Dragon Scale Armor', t:'armor',  atk:0,  def:40, hp:0,   mp:0,  val:8000,  lvl:60, color:'#CC3300'},
-  48: {n:'Magic Plate Armor',  t:'armor',  atk:0,  def:52, hp:0,   mp:0,  val:25000, lvl:80, color:'#88BBFF'},
+  8:  {n:'Leather Armor',      t:'armor',  atk:0,  def:8,  hp:0,   mp:0,  val:60,    lvl:1,  color:'#8B4513', spr:3358},
+  9:  {n:'Chain Armor',        t:'armor',  atk:0,  def:14, hp:0,   mp:0,  val:200,   lvl:10, color:'#999999', spr:3381},
+  10: {n:'Plate Armor',        t:'armor',  atk:0,  def:22, hp:0,   mp:0,  val:800,   lvl:25, color:'#BBBBBB', spr:3382},
+  46: {n:'Golden Armor',       t:'armor',  atk:0,  def:30, hp:0,   mp:0,  val:2500,  lvl:40, color:'#FFD700', spr:3384},
+  47: {n:'Dragon Scale Armor', t:'armor',  atk:0,  def:40, hp:0,   mp:0,  val:8000,  lvl:60, color:'#CC3300', spr:3385},
+  48: {n:'Magic Plate Armor',  t:'armor',  atk:0,  def:52, hp:0,   mp:0,  val:25000, lvl:80, color:'#88BBFF', spr:3379},
   // ── HELMETS ────────────────────────────────────────────────────────────
-  11: {n:'Leather Helmet',      t:'helmet', atk:0, def:1,  hp:0, mp:0,  val:20,    lvl:1,  color:'#8B4513', spr:null},
-  12: {n:'Iron Helmet',         t:'helmet', atk:0, def:3,  hp:0, mp:0,  val:120,   lvl:5,  color:'#888888', spr:null},
-  49: {n:'Brass Helmet',        t:'helmet', atk:0, def:2,  hp:0, mp:0,  val:60,    lvl:3,  color:'#B8860B', spr:null},
-  50: {n:'Chain Helmet',        t:'helmet', atk:0, def:4,  hp:0, mp:0,  val:200,   lvl:8,  color:'#AAAAAA', spr:null},
-  60: {n:'Crown',               t:'helmet', atk:0, def:5,  hp:0, mp:20, val:800,   lvl:20, color:'#FFD700', spr:null},
-  61: {n:'Crown Helmet',        t:'helmet', atk:0, def:20, hp:0, mp:0,  val:5000,  lvl:55, color:'#FFD700', spr:null},
-  62: {n:'Crusader Helmet',     t:'helmet', atk:0, def:11, hp:0, mp:0,  val:2000,  lvl:40, color:'#BBBBBB', spr:null},
-  63: {n:'Dark Helmet',         t:'helmet', atk:0, def:10, hp:0, mp:0,  val:1500,  lvl:30, color:'#333333', spr:null},
-  64: {n:'Golden Helmet',       t:'helmet', atk:0, def:14, hp:0, mp:0,  val:8000,  lvl:60, color:'#FFD700', spr:null},
-  65: {n:'Hat of the Mad',      t:'helmet', atk:5, def:0,  hp:0, mp:30, val:3000,  lvl:35, color:'#8844AA', spr:null},
-  66: {n:'Full Plate Helmet',   t:'helmet', atk:0, def:14, hp:0, mp:0,  val:1200,  lvl:25, color:'#BBBBBB', spr:null},
+  11: {n:'Leather Helmet',     t:'helmet', atk:0, def:1,  hp:0, mp:0,  val:20,    lvl:1,  color:'#8B4513', spr:3355},
+  12: {n:'Iron Helmet',        t:'helmet', atk:0, def:3,  hp:0, mp:0,  val:120,   lvl:5,  color:'#888888', spr:3392},
+  49: {n:'Brass Helmet',       t:'helmet', atk:0, def:2,  hp:0, mp:0,  val:60,    lvl:3,  color:'#B8860B', spr:3351},
+  50: {n:'Chain Helmet',       t:'helmet', atk:0, def:4,  hp:0, mp:0,  val:200,   lvl:8,  color:'#AAAAAA', spr:3353},
+  60: {n:'Crown',              t:'helmet', atk:0, def:5,  hp:0, mp:20, val:800,   lvl:20, color:'#FFD700', spr:3352},
+  61: {n:'Crown Helmet',       t:'helmet', atk:0, def:20, hp:0, mp:0,  val:5000,  lvl:55, color:'#FFD700', spr:3458},
+  62: {n:'Crusader Helmet',    t:'helmet', atk:0, def:11, hp:0, mp:0,  val:2000,  lvl:40, color:'#BBBBBB', spr:3456},
+  63: {n:'Dark Helmet',        t:'helmet', atk:0, def:10, hp:0, mp:0,  val:1500,  lvl:30, color:'#333333', spr:3457},
+  64: {n:'Golden Helmet',      t:'helmet', atk:0, def:14, hp:0, mp:0,  val:8000,  lvl:60, color:'#FFD700', spr:3460},
+  65: {n:'Hat of the Mad',     t:'helmet', atk:5, def:0,  hp:0, mp:30, val:3000,  lvl:35, color:'#8844AA', spr:3462},
+  66: {n:'Full Plate Helmet',  t:'helmet', atk:0, def:14, hp:0, mp:0,  val:1200,  lvl:25, color:'#BBBBBB', spr:3459},
   // ── LEGS ───────────────────────────────────────────────────────────────
-  51: {n:'Leather Legs',       t:'legs',   atk:0,  def:4,  hp:0,   mp:0,  val:35,    lvl:1,  color:'#8B4513'},
-  52: {n:'Chain Legs',         t:'legs',   atk:0,  def:9,  hp:0,   mp:0,  val:160,   lvl:10, color:'#999999'},
-  53: {n:'Plate Legs',         t:'legs',   atk:0,  def:16, hp:0,   mp:0,  val:600,   lvl:25, color:'#BBBBBB'},
-  54: {n:'Golden Legs',        t:'legs',   atk:0,  def:24, hp:0,   mp:0,  val:3000,  lvl:50, color:'#FFD700'},
+  51: {n:'Leather Legs',       t:'legs',   atk:0,  def:4,  hp:0,   mp:0,  val:35,    lvl:1,  color:'#8B4513', spr:3557},
+  52: {n:'Chain Legs',         t:'legs',   atk:0,  def:9,  hp:0,   mp:0,  val:160,   lvl:10, color:'#999999', spr:3558},
+  53: {n:'Plate Legs',         t:'legs',   atk:0,  def:16, hp:0,   mp:0,  val:600,   lvl:25, color:'#BBBBBB', spr:3559},
+  54: {n:'Golden Legs',        t:'legs',   atk:0,  def:24, hp:0,   mp:0,  val:3000,  lvl:50, color:'#FFD700', spr:3563},
   // ── BOOTS ──────────────────────────────────────────────────────────────
-  55: {n:'Leather Boots',      t:'boots',  atk:0,  def:2,  hp:0,   mp:0,  val:20,    lvl:1,  color:'#8B4513'},
-  56: {n:'Chain Boots',        t:'boots',  atk:0,  def:5,  hp:0,   mp:0,  val:80,    lvl:10, color:'#888888'},
-  57: {n:'Plate Boots',        t:'boots',  atk:0,  def:9,  hp:0,   mp:0,  val:300,   lvl:25, color:'#BBBBBB'},
-  58: {n:'Soft Boots',         t:'boots',  atk:0,  def:6,  hp:0,   mp:0,  val:1500,  lvl:30, color:'#FFCCAA'},
+  55: {n:'Leather Boots',      t:'boots',  atk:0,  def:2,  hp:0,   mp:0,  val:20,    lvl:1,  color:'#8B4513', spr:3370},
+  56: {n:'Chain Boots',        t:'boots',  atk:0,  def:5,  hp:0,   mp:0,  val:80,    lvl:10, color:'#888888', spr:3372},
+  57: {n:'Plate Boots',        t:'boots',  atk:0,  def:9,  hp:0,   mp:0,  val:300,   lvl:25, color:'#BBBBBB', spr:3371},
+  58: {n:'Soft Boots',         t:'boots',  atk:0,  def:6,  hp:0,   mp:0,  val:1500,  lvl:30, color:'#FFCCAA', spr:3553},
   // ── SHIELDS ────────────────────────────────────────────────────────────
-  13: {n:'Wood Shield',        t:'shield', atk:0,  def:5,  hp:0,   mp:0,  val:25,    lvl:1,  color:'#8B4513'},
-  14: {n:'Iron Shield',        t:'shield', atk:0,  def:12, hp:0,   mp:0,  val:180,   lvl:8,  color:'#888888'},
-  59: {n:'Dragon Shield',      t:'shield', atk:0,  def:20, hp:0,   mp:0,  val:1500,  lvl:40, color:'#CC3300'},
-  60: {n:'Blessed Shield',     t:'shield', atk:0,  def:30, hp:0,   mp:0,  val:6000,  lvl:65, color:'#EEEEFF'},
+  13: {n:'Wood Shield',        t:'shield', atk:0,  def:5,  hp:0,   mp:0,  val:25,    lvl:1,  color:'#8B4513', spr:3409},
+  14: {n:'Iron Shield',        t:'shield', atk:0,  def:12, hp:0,   mp:0,  val:180,   lvl:8,  color:'#888888', spr:3413},
+  59: {n:'Dragon Shield',      t:'shield', atk:0,  def:20, hp:0,   mp:0,  val:1500,  lvl:40, color:'#CC3300', spr:3415},
+  115:{n:'Blessed Shield',     t:'shield', atk:0,  def:30, hp:0,   mp:0,  val:6000,  lvl:65, color:'#EEEEFF', spr:3414},
   // ── RINGS ──────────────────────────────────────────────────────────────
-  61: {n:'Ring of Healing',    t:'ring',   atk:0,  def:2,  hp:0,   mp:0,  val:200,   lvl:1,  color:'#FF8888'},
-  62: {n:'Ring of the Sky',    t:'ring',   atk:5,  def:0,  hp:0,   mp:0,  val:500,   lvl:20, color:'#88AAFF'},
-  63: {n:'Stealth Ring',       t:'ring',   atk:0,  def:8,  hp:0,   mp:0,  val:1000,  lvl:35, color:'#444444'},
-  64: {n:'Dragon Ring',        t:'ring',   atk:8,  def:5,  hp:0,   mp:0,  val:4000,  lvl:60, color:'#FF4400'},
+  120:{n:'Ring of Healing',    t:'ring',   atk:0,  def:2,  hp:0,   mp:0,  val:200,   lvl:1,  color:'#FF8888', spr:null},
+  121:{n:'Ring of the Sky',    t:'ring',   atk:5,  def:0,  hp:0,   mp:0,  val:500,   lvl:20, color:'#88AAFF', spr:null},
+  122:{n:'Stealth Ring',       t:'ring',   atk:0,  def:8,  hp:0,   mp:0,  val:1000,  lvl:35, color:'#444444', spr:null},
+  123:{n:'Dragon Ring',        t:'ring',   atk:8,  def:5,  hp:0,   mp:0,  val:4000,  lvl:60, color:'#FF4400', spr:null},
   // ── AMULETS ────────────────────────────────────────────────────────────
-  65: {n:'Stone Skin Amulet',  t:'amulet', atk:0,  def:5,  hp:0,   mp:0,  val:300,   lvl:1,  color:'#AAAAAA'},
-  66: {n:'Might Ring',         t:'amulet', atk:7,  def:0,  hp:0,   mp:0,  val:600,   lvl:25, color:'#FF6600'},
-  67: {n:'Swiftness Amulet',   t:'amulet', atk:4,  def:4,  hp:0,   mp:0,  val:1200,  lvl:40, color:'#88FFFF'},
-  68: {n:'Demon Amulet',       t:'amulet', atk:0,  def:12, hp:0,   mp:0,  val:5000,  lvl:70, color:'#880000'},
+  130:{n:'Stone Skin Amulet',  t:'amulet', atk:0,  def:5,  hp:0,   mp:0,  val:300,   lvl:1,  color:'#AAAAAA', spr:null},
+  131:{n:'Might Ring',         t:'amulet', atk:7,  def:0,  hp:0,   mp:0,  val:600,   lvl:25, color:'#FF6600', spr:null},
+  132:{n:'Swiftness Amulet',   t:'amulet', atk:4,  def:4,  hp:0,   mp:0,  val:1200,  lvl:40, color:'#88FFFF', spr:null},
+  133:{n:'Demon Amulet',       t:'amulet', atk:0,  def:12, hp:0,   mp:0,  val:5000,  lvl:70, color:'#880000', spr:null},
   // ── POTIONS ────────────────────────────────────────────────────────────
   20: {n:'HP Potion',          t:'potion', atk:0,  def:0,  hp:100, mp:0,  val:50,    lvl:1,  color:'#CC0000'},
   21: {n:'Str HP Potion',      t:'potion', atk:0,  def:0,  hp:250, mp:0,  val:120,   lvl:10, color:'#FF0000'},
@@ -489,13 +489,13 @@ const NPC_DEFS = [
    dlg:['Protejo esta cidade!','Esses monstros não passarão!','Juntos somos mais fortes!','Cuidado com as masmorras ao sul.']},
   // Town 2 (90,30) — Mira alquimista + Lyra paladina
   {id:'mira',   name:'Mira',    voc:'Druid',    lvl:18, x:93, y:27, role:'merchant', title:'Alquimista',
-   stock:[20,21,22,23,69,70,73,74,75,61,65],
+   stock:[20,21,22,23,69,70,73,74,75,120,130],
    dlg:['Poções fresquinhas hoje!','Nunca aventure sem poções!','Minha fórmula é secreta.','Saúde em primeiro lugar!']},
   {id:'lyra',   name:'Lyra',    voc:'Paladin',  lvl:30, x:87, y:33, role:'warrior',  title:'Paladina',
    dlg:['A luz guia meus passos.','Precisa de ajuda, aventureiro?','Minha besta nunca erra.','Há monstros por perto!']},
   // Town 3 (60,90) — Gareth armeiro + Zane sorcerer
   {id:'gareth', name:'Gareth',  voc:'Paladin',  lvl:22, x:63, y:87, role:'merchant', title:'Armeiro',
-   stock:[9,10,46,12,49,14,59,52,53,56,57,39,43,44,62,63,66,67,20,22],
+   stock:[9,10,46,12,49,14,59,52,53,56,57,39,43,44,62,63,66,132,20,22],
    dlg:['Armaduras forjadas à mão!','Proteção é vida, aventureiro.','Veja meu estoque premium.','Forjado para durar séculos.']},
   {id:'zane',   name:'Zane',    voc:'Sorcerer', lvl:35, x:57, y:93, role:'warrior',  title:'Arcano',
    dlg:['O arcanismo é poder.','Meus feitiços afastam o mal.','Você viu os dragões ao leste?','Estude magia, é vital.']},
@@ -3754,6 +3754,9 @@ function shopTab(tab) {
   const p = world.player;
   document.getElementById('shopGold').textContent = `Seu ouro: ${p.gold}g`;
   let html = '';
+  const _sprIcon = (it) => it.spr != null
+    ? `<img src="${PADV_CDN}/item/${it.spr}.png" style="width:28px;height:28px;image-rendering:pixelated;flex-shrink:0;background:#111" onerror="this.style.display='none'">`
+    : `<div style="width:28px;height:28px;background:${it.color||'#666'};flex-shrink:0;border:1px solid #333"></div>`;
   if (tab === 'buy') {
     for (const id of (_shopNpc.stock||[])) {
       const it = ITEMS[id]; if (!it) continue;
@@ -3761,7 +3764,8 @@ function shopTab(tab) {
       const can = p.gold >= price;
       const stat = it.hp?`HP+${it.hp}`:it.mp?`MP+${it.mp}`:it.atk?`ATK+${it.atk}`:`DEF+${it.def}`;
       html += `<div class="shop-item">
-        <span class="shop-item-name" style="color:${can?'#EEE':'#666'}">${it.n}
+        ${_sprIcon(it)}
+        <span class="shop-item-name" style="color:${can?'#EEE':'#666'};flex:1">${it.n}
           <span style="color:#888;font-size:11px">${stat} · Lv${it.lvl}</span></span>
         <span style="color:#FFD700;min-width:44px;text-align:right">${price}g</span>
         <button class="inv-btn" onclick="buyItem(${id},${price})" ${can?'':'disabled style="opacity:.35"'}>COMPRAR</button>
@@ -3775,7 +3779,8 @@ function shopTab(tab) {
       const price = Math.floor(it.val * 0.5);
       const stat = it.hp?`HP+${it.hp}`:it.mp?`MP+${it.mp}`:it.atk?`ATK+${it.atk}`:`DEF+${it.def}`;
       html += `<div class="shop-item">
-        <span class="shop-item-name">${it.n} <span style="color:#888;font-size:11px">x${cnt} · ${stat}</span></span>
+        ${_sprIcon(it)}
+        <span class="shop-item-name" style="flex:1">${it.n} <span style="color:#888;font-size:11px">x${cnt} · ${stat}</span></span>
         <span style="color:#88FF88;min-width:44px;text-align:right">${price}g</span>
         <button class="inv-btn" onclick="sellItem(${id},${price})">VENDER</button>
       </div>`;
